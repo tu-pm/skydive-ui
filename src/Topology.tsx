@@ -1930,7 +1930,7 @@ export class Topology extends React.Component<Props, {}> {
             .attr("class", "node-hexagon")
             .attr("d", (d: D3Node) => this.liner(this.hexagon(d, hexSize)))
 
-        const isImgIcon = (d: D3Node):boolean => {
+        const isImgIcon = (d: D3Node): boolean => {
             var icon = this.props.nodeAttrs(d.data.wrapped).icon
             return icon.startsWith("/") || icon.startsWith("http") || icon.startsWith("data:")
         }

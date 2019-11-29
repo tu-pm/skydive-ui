@@ -31,6 +31,8 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft'
 import Divider from '@material-ui/core/Divider'
 import List from '@material-ui/core/List'
 import Container from '@material-ui/core/Container'
+import Grid from '@material-ui/core/Grid'
+import TextField from '@material-ui/core/TextField'
 import Paper from '@material-ui/core/Paper'
 import Checkbox from '@material-ui/core/Checkbox'
 import FormGroup from '@material-ui/core/FormGroup'
@@ -53,6 +55,7 @@ import AutoCompleteInput from './AutoComplete'
 import { AppState, selectElement, unselectElement, bumpRevision, session, closeSession } from './Store'
 import SelectionPanel from './SelectionPanel'
 import DefaultConfig from './Config'
+import IpPathTracing from './IpPathTracing'
 
 import './App.css'
 import Logo from '../assets/Logo.png'
@@ -150,6 +153,10 @@ class App extends React.Component<Props, State> {
     if (this.checkAuthID) {
       window.clearInterval(this.checkAuthID)
     }
+  }
+
+  highlightPath(src: string, dest: string) {
+
   }
 
   fillSuggestions(node: Node, suggestions: Array<string>) {
@@ -445,7 +452,7 @@ class App extends React.Component<Props, State> {
       method: 'GET',
       headers: {
         'X-Auth-Token': this.props.session.token
-      }
+      },
     }
 
     return fetch(`${this.props.session.endpoint}/api/status`, requestOptions)
@@ -729,21 +736,44 @@ class App extends React.Component<Props, State> {
             ))}
           </Container>
           <Container className={classes.linkTagsPanel}>
-            <Paper className={classes.linkTagsPanelPaper}>
-              <Typography component="h6" color="primary" gutterBottom>
-                Link types
-                </Typography>
-              <FormGroup>
-                {Array.from(this.state.linkTagStates.keys()).map((key) => (
-                  <FormControlLabel key={key} control={
-                    <Checkbox value={key} color="primary" onChange={this.onLayerLinkStateChange.bind(this)}
-                      checked={this.state.linkTagStates.get(key) === LinkTagState.Visible}
-                      indeterminate={this.state.linkTagStates.get(key) === LinkTagState.EventBased} />
-                  }
-                    label={key} />
-                ))}
-              </FormGroup>
-            </Paper>
+            <Grid container spacing={2}>
+              <Grid item xs={5}>
+                <Paper className={classes.linkTagsPanelPaper}>
+                  <Typography component="h6" color="primary" gutterBottom>
+                    Link types
+                  </Typography>
+                  <FormGroup>
+                    {Array.from(this.state.linkTagStates.keys()).map((key) => (
+                      <FormControlLabel key={key} control={
+                        <Checkbox value={key} color="primary" onChange={this.onLayerLinkStateChange.bind(this)}
+                          checked={this.state.linkTagStates.get(key) === LinkTagState.Visible}
+                          indeterminate={this.state.linkTagStates.get(key) === LinkTagState.EventBased} />
+                      }
+                        label={key} />
+                    ))}
+                  </FormGroup>
+                </Paper>
+              </Grid>
+              <Grid item xs={7}>
+                <Paper className={classes.linkTagsPanelPaper}>
+                  <Typography component="h6" color="primary" gutterBottom>
+                    Link types
+                  </Typography>
+                  <TextField
+                    required
+                    label="Source IP"
+                    margin="dense"
+                    variant="outlined"
+                  />
+                  <TextField
+                    required
+                    label="Dest IP"
+                    margin="dense"
+                    variant="outlined"
+                  />
+                </Paper>
+              </Grid>
+            </Grid>
           </Container>
         </main>
       </div>
