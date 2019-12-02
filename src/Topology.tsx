@@ -49,9 +49,10 @@ export class Node {
     weight: number | ((node: Node) => number)
     children: Array<Node>
     state: NodeState
-    parent: Node | null
+    parent: Node | undefined
     revision: number
     type: 'node'
+    highlighted: boolean
 
     constructor(id: string, tags: Array<string>, data: any, state: NodeState, weight: number | ((node: Node) => number)) {
         this.id = id
@@ -61,6 +62,7 @@ export class Node {
         this.children = new Array<Node>()
         this.state = state
         this.type = 'node'
+        this.highlighted = false
     }
 
     getWeight(): number {
@@ -555,6 +557,77 @@ export class Topology extends React.Component<Props, {}> {
         this.invalidated = true
     }
 
+    getNodeFromIPv4(ipAddr: string): Node | undefined {
+        for (let node of this.nodes.values()) {
+            if (node.data.Neutron && node.data.Neutron.IPV4) {
+                for (let addr of node.data.Neutron.IPV4) {
+                    if (addr.split("/")[0] === ipAddr) {
+                        return node
+                    }
+                }
+            }
+        }
+    }
+
+    getNeighborByType(node: Node, type: string): Node | undefined {
+        for (let link of this.links.values()) {
+            if (link.source === node && link.target.data.Type && link.target.data.Type === type) {
+                return link.target
+            }
+            if (link.target === node && link.source.data.Type && link.source.data.Type === type) {
+                return link.source
+            }
+        }
+    }
+
+    tracePath(srcAddr: string, destAddr: string): Array<Node | undefined> {
+        var nodes = new Array<Node | undefined>()
+        var srcTap = this.getNodeFromIPv4(srcAddr)
+        if (!srcTap) {
+            return nodes
+        }
+        var destTap = this.getNodeFromIPv4(destAddr)
+        if (!destTap) {
+            return nodes
+        }
+        var srcVM = this.getNeighborByType(srcTap, "libvirt")
+        if (!srcVM) {
+            return nodes
+        }
+        var destVM = this.getNeighborByType(destTap, "libvirt")
+        if (!destVM) {
+            return nodes
+        }
+        var srcVhost = this.getNeighborByType(srcTap, "vhost")
+        if (!srcVhost) {
+            return nodes
+        }
+        var destVhost = this.getNeighborByType(destTap, "vhost")
+        if (!destVhost) {
+            return nodes
+        }
+        if (!srcTap.data.Tunnels || !destTap.data.IPV4) {
+            return nodes
+        }
+        let destIPs = destTap.data.IPv4.Map((ip: string) => ip.split("/")[0])
+        for (let tunnel of srcTap.data.Tunnels) {
+            if (destIPs.includes(tunnel.DestinationIP)) {
+                nodes.push(
+                    srcVM,
+                    srcTap,
+                    srcVhost,
+                    srcVhost.parent,
+                    destVhost.parent,
+                    destVhost,
+                    destTap,
+                    destVM
+                )
+                return nodes
+            }
+        }
+        return nodes
+    }
+
     addLink(id: string, node1: Node, node2: Node, tags: Array<string>, data: any) {
         this.links.set(id, new Link(id, tags, node1, node2, data, { selected: false }))
 
@@ -839,7 +912,7 @@ export class Topology extends React.Component<Props, {}> {
     private visibleLinks() {
         var links = Array<Link>()
 
-        var findVisible = (node: Node | null) => {
+        var findVisible = (node: Node | undefined) => {
             while (node) {
                 if (this.d3nodes.get(node.id)) {
                     return node
@@ -1310,7 +1383,7 @@ export class Topology extends React.Component<Props, {}> {
     private showNode(node: Node) {
         // find next node to expand, can be either a parent of a group
         const nextId = () => {
-            var id = "", gid = "", parent: Node | null = node
+            var id = "", gid = "", parent: Node | undefined = node
             while (parent) {
                 var group = this.nodeGroup.get(parent.id)
                 if (group && !group.wrapped.state.expanded) {
@@ -2209,6 +2282,7 @@ export class Topology extends React.Component<Props, {}> {
     }
 
     render() {
+        // console.log(this.tracePath("20.20.20.101", "20.20.20.100"))
         return (
             <div className={this.props.className} ref={node => this.svgDiv = node} style={{ position: 'relative' }}>
                 <ResizeObserver

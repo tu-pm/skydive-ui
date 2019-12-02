@@ -55,7 +55,6 @@ import AutoCompleteInput from './AutoComplete'
 import { AppState, selectElement, unselectElement, bumpRevision, session, closeSession } from './Store'
 import SelectionPanel from './SelectionPanel'
 import DefaultConfig from './Config'
-import IpPathTracing from './IpPathTracing'
 
 import './App.css'
 import Logo from '../assets/Logo.png'
@@ -355,6 +354,12 @@ class App extends React.Component<Props, State> {
   }
 
   sortNodesFnc(a, b) {
+    if (a.highlighted && !b.highlighted) {
+      return -1
+    }
+    if (!a.highlighted && b.highlighted) {
+      return 1
+    }
     return a.data.Name.localeCompare(b.data.Name)
   }
 
@@ -451,7 +456,7 @@ class App extends React.Component<Props, State> {
     const requestOptions = {
       method: 'GET',
       headers: {
-        'X-Auth-Token': this.props.session.token
+        'X-Auth-Token': this.props.session.token,
       },
     }
 
