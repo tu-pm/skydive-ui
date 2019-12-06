@@ -24,6 +24,9 @@ import { zoom, zoomIdentity } from 'd3-zoom'
 import ResizeObserver from 'react-resize-observer'
 
 import './Topology.css'
+import { resetIdCounter } from "downshift"
+import { notDeepEqual } from "assert"
+import { v4 as uuid } from "uuid"
 
 const animDuration = 500
 const defaultGroupSize = 4
@@ -53,6 +56,7 @@ export class Node {
     revision: number
     type: 'node'
     highlighted: boolean
+    sortFirst: boolean
 
     constructor(id: string, tags: Array<string>, data: any, state: NodeState, weight: number | ((node: Node) => number)) {
         this.id = id
@@ -63,6 +67,7 @@ export class Node {
         this.state = state
         this.type = 'node'
         this.highlighted = false
+        this.sortFirst = false
     }
 
     getWeight(): number {
@@ -167,7 +172,7 @@ export interface LinkAttrs {
 
 interface Props {
     onClick: () => void
-    sortNodesFnc: (node1: Node, node2: Node) => number
+    // sortNodesFnc: (node1: NodeWrapper, node2: NodeWrapper) => number
     onShowNodeContextMenu: (node: Node) => any
     onNodeSelected: (node: Node, isSelected: boolean) => void
     className: string
@@ -215,6 +220,8 @@ export class Topology extends React.Component<Props, {}> {
     private groupStates: Map<string, NodeState>
     private nodeGroup: Map<string, NodeWrapper>
     private weights: Array<number>
+    private highlightedNodes: Array<Node>
+    private highlightedLinks: Array<string>
 
     root: Node
     nodes: Map<string, Node>
@@ -228,6 +235,8 @@ export class Topology extends React.Component<Props, {}> {
 
         this.nodeWidth = 150
         this.nodeHeight = 260
+        this.highlightedNodes = []
+        this.highlightedLinks = []
 
         if (this.props.weightTitles) {
             this.weightTitles = this.props.weightTitles
@@ -580,52 +589,112 @@ export class Topology extends React.Component<Props, {}> {
         }
     }
 
-    tracePath(srcAddr: string, destAddr: string): Array<Node | undefined> {
+    tracePath(srcAddr: string, destAddr: string) {
         var nodes = new Array<Node | undefined>()
+
         var srcTap = this.getNodeFromIPv4(srcAddr)
         if (!srcTap) {
-            return nodes
+            return
         }
         var destTap = this.getNodeFromIPv4(destAddr)
         if (!destTap) {
-            return nodes
-        }
-        var srcVM = this.getNeighborByType(srcTap, "libvirt")
-        if (!srcVM) {
-            return nodes
-        }
-        var destVM = this.getNeighborByType(destTap, "libvirt")
-        if (!destVM) {
-            return nodes
+            return
         }
         var srcVhost = this.getNeighborByType(srcTap, "vhost")
         if (!srcVhost) {
-            return nodes
+            return
         }
         var destVhost = this.getNeighborByType(destTap, "vhost")
         if (!destVhost) {
-            return nodes
+            return
         }
-        if (!srcTap.data.Tunnels || !destTap.data.IPV4) {
-            return nodes
-        }
-        let destIPs = destTap.data.IPv4.Map((ip: string) => ip.split("/")[0])
-        for (let tunnel of srcTap.data.Tunnels) {
-            if (destIPs.includes(tunnel.DestinationIP)) {
-                nodes.push(
-                    srcVM,
-                    srcTap,
-                    srcVhost,
-                    srcVhost.parent,
-                    destVhost.parent,
-                    destVhost,
-                    destTap,
-                    destVM
-                )
-                return nodes
+        var srcVM = this.getNeighborByType(srcTap, "libvirt")
+        var destVM = this.getNeighborByType(destTap, "libvirt")
+
+        // List of nodes that will be highlighted
+        if (srcVhost === destVhost) {
+            nodes = [srcVM, srcTap, srcVhost, destTap, destVM]
+        } else {
+            // Check if there's a route from source vhost to dest vhost with ip dest prefix
+            if (srcVhost.data.Tunnels && destVhost.data.IPV4) {
+                let destIPs = destVhost.data.IPV4.map((ip: string) => ip.split("/")[0])
+                var hasRoute = false
+                for (let tunnel of srcVhost.data.Tunnels) {
+                    if (destIPs.includes(tunnel.DestinationIP)
+                        && destAddr === tunnel.Prefix.split("/")[0]) {
+                        hasRoute = true
+                        break
+                    }
+                }
+                if (hasRoute) {
+                    var srcHost = srcTap.parent
+                    var destHost = destTap.parent
+                    nodes = [srcVM, srcTap, srcVhost, srcHost, destHost, destVhost, destTap, destVM]
+                }
             }
         }
-        return nodes
+
+        var tun = {
+            TunnelType: "MPLSoUDP",
+            VXLANID: "123",
+            Label: "123",
+        }
+
+        var linkMetadata = {
+            SourceIP: srcAddr,
+            DestinationIP: destAddr,
+            ...tun,
+        }
+        this.highlightPath(nodes, "tunnel", linkMetadata)
+    }
+
+    clearHighlightedPath() {
+        this.highlightedNodes.forEach(node => {
+            node.highlighted = false
+            node.sortFirst = false
+        })
+        this.highlightedNodes = []
+        this.highlightedLinks.forEach(linkID => {
+            this.delLink(linkID)
+        })
+        this.highlightedLinks = []
+    }
+
+    highlightPath(nodes: Array<Node | undefined>, linkTag: string, linkMetadata: any) {
+        this.clearHighlightedPath()
+
+        // Highlight nodes
+        nodes.forEach(node => {
+            if (!node) {
+                return
+            }
+            // Make sure that node is visible
+            this.showNode(node)
+            // Highlight that node
+            node.highlighted = true
+            if (this.nodeGroup.get(node.id)) {
+                node.sortFirst = true
+            }
+            this.highlightedNodes.push(node)
+        })
+        this.renderTree()
+
+        // Highlight links
+        nodes.forEach((node, index) => {
+            var nextNode = nodes[index + 1]
+            if (node && nextNode) {
+                const linkID: string = uuid()
+                this.addLink(
+                    linkID,
+                    node,
+                    nextNode,
+                    new Array<string>(linkTag),
+                    linkMetadata
+                )
+                this.linkTagStates.set(linkTag, LinkTagState.Visible)
+                this.highlightedLinks.push(linkID)
+            }
+        })
     }
 
     addLink(id: string, node1: Node, node2: Node, tags: Array<string>, data: any) {
@@ -732,14 +801,32 @@ export class Topology extends React.Component<Props, {}> {
 
             var wrapper = groups.get(gid)
             if (wrapper && wrapper.wrapped.children.length > 5) {
+                wrapper.children.sort((a, b) => {
+                    if (a.wrapped.sortFirst && !b.wrapped.sortFirst) {
+                        return -1
+                    }
+                    if (!a.wrapped.sortFirst && b.wrapped.sortFirst) {
+                        return 1
+                    }
+                    return a.wrapped.data.Name.localeCompare(b.wrapped.data.Name)
+                })
                 children.push(wrapper)
                 if (wrapper.wrapped.state.expanded) {
                     if (wrapper.wrapped.state.groupFullSize) {
                         children = children.concat(wrapper.children)
                     } else {
-                        children = children.concat(
-                            wrapper.children.splice(wrapper.wrapped.state.groupOffset, this.props.groupSize || defaultGroupSize)
-                        )
+                        // Push child nodes with sortFirst = true to first in group
+                        var n = 0
+                        while (wrapper.children[n].wrapped.sortFirst) {
+                            n += 1
+                        }
+                        if (n > 0) {
+                            children = children.concat(wrapper.children.slice(0, n))
+                        } else {
+                            children = children.concat(
+                                wrapper.children.splice(wrapper.wrapped.state.groupOffset, this.props.groupSize || defaultGroupSize)
+                            )
+                        }
                     }
                 }
                 wrapper.wrapped.children.forEach(child => {
@@ -778,9 +865,7 @@ export class Topology extends React.Component<Props, {}> {
                     cloned.children.push(subCloned)
                 }
             })
-            if (this.props.sortNodesFnc) {
-                cloned.children.sort((a, b) => this.props.sortNodesFnc(a.wrapped, b.wrapped))
-            }
+            cloned.children.sort((a, b) => a.wrapped.data.Name.localeCompare(b.wrapped.data.Name))
             for (const [gid, group] of this.groupify(cloned).entries()) {
                 this.groups.set(gid, group)
             }
@@ -1943,7 +2028,9 @@ export class Topology extends React.Component<Props, {}> {
 
         const nodeClass = (d: D3Node) => new Array<string>().concat("node",
             this.props.nodeAttrs(d.data.wrapped).classes,
-            d.data.wrapped.state.selected ? "node-selected" : "").join(" ")
+            d.data.wrapped.state.selected ? "node-selected" : "",
+            d.data.wrapped.highlighted ? "highlighted" : "").join(" ")
+
 
         var nodeEnter = node.enter()
             .filter((d: D3Node) => d.data.type !== WrapperType.Hidden && d.data.wrapped !== this.root)
@@ -2281,13 +2368,15 @@ export class Topology extends React.Component<Props, {}> {
         this.invalidated = false
     }
 
+
     render() {
-        // console.log(this.tracePath("20.20.20.101", "20.20.20.100"))
         return (
-            <div className={this.props.className} ref={node => this.svgDiv = node} style={{ position: 'relative' }}>
-                <ResizeObserver
-                    onResize={(rect) => { this.onResize(rect) }} />
-            </div>
+            <React.Fragment>
+                <div className={this.props.className} ref={node => this.svgDiv = node} style={{ position: 'relative' }}>
+                    <ResizeObserver
+                        onResize={(rect) => { this.onResize(rect) }} />
+                </div>
+            </React.Fragment>
         )
     }
 }

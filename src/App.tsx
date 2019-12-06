@@ -55,6 +55,7 @@ import AutoCompleteInput from './AutoComplete'
 import { AppState, selectElement, unselectElement, bumpRevision, session, closeSession } from './Store'
 import SelectionPanel from './SelectionPanel'
 import DefaultConfig from './Config'
+import IpPathTracing from './IpPathTracing'
 
 import './App.css'
 import Logo from '../assets/Logo.png'
@@ -354,13 +355,8 @@ class App extends React.Component<Props, State> {
   }
 
   sortNodesFnc(a, b) {
-    if (a.highlighted && !b.highlighted) {
-      return -1
-    }
-    if (!a.highlighted && b.highlighted) {
-      return 1
-    }
-    return a.data.Name.localeCompare(b.data.Name)
+
+    return a.data.Name.localeCompare(b.wrapped.data.Name)
   }
 
   onShowNodeContextMenu(node: Node) {
@@ -458,12 +454,13 @@ class App extends React.Component<Props, State> {
       headers: {
         'X-Auth-Token': this.props.session.token,
       },
+      mode: 'no-cors' as const
     }
 
     return fetch(`${this.props.session.endpoint}/api/status`, requestOptions)
       .then(response => {
         if (response.status !== 200) {
-          this.logout()
+          // this.logout()
         }
       })
   }
@@ -720,7 +717,7 @@ class App extends React.Component<Props, State> {
           <div className={classes.appBarSpacer} />
           <Container maxWidth="xl" className={classes.container}>
             <Topology className={classes.topology} ref={node => this.tc = node} nodeAttrs={this.nodeAttrs} linkAttrs={this.linkAttrs}
-              onNodeSelected={this.onNodeSelected.bind(this)} sortNodesFnc={this.sortNodesFnc}
+              onNodeSelected={this.onNodeSelected.bind(this)}
               onShowNodeContextMenu={this.onShowNodeContextMenu.bind(this)} weightTitles={this.weightTitles()}
               groupBy={config.groupBy} onClick={this.onTopologyClick.bind(this)} onLinkSelected={this.onLinkSelected.bind(this)} />
           </Container>
@@ -760,23 +757,7 @@ class App extends React.Component<Props, State> {
                 </Paper>
               </Grid>
               <Grid item xs={7}>
-                <Paper className={classes.linkTagsPanelPaper}>
-                  <Typography component="h6" color="primary" gutterBottom>
-                    Link types
-                  </Typography>
-                  <TextField
-                    required
-                    label="Source IP"
-                    margin="dense"
-                    variant="outlined"
-                  />
-                  <TextField
-                    required
-                    label="Dest IP"
-                    margin="dense"
-                    variant="outlined"
-                  />
-                </Paper>
+                {this.tc && <IpPathTracing tracePath={this.tc.tracePath.bind(this.tc)} />}
               </Grid>
             </Grid>
           </Container>

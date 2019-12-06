@@ -18,7 +18,7 @@ import * as portableFetch from "portable-fetch";
 import { Configuration } from "./configuration";
 
 // INFO(safchain) workaround, see: https://github.com/swagger-api/swagger-codegen/issues/6403
-import {stringify as qs_stringify} from "querystring";
+import { stringify as qs_stringify } from "querystring";
 class URLSearchParams {
     data: any;
 
@@ -35,7 +35,7 @@ class URLSearchParams {
     }
 }
 
-url.URLSearchParams = URLSearchParams;
+// url.URLSearchParams = URLSearchParams;
 
 const BASE_PATH = "http://localhost:8082/api".replace(/\/+$/, "");
 
@@ -1713,7 +1713,7 @@ export const APIInfoApiFetchParamCreator = function (configuration?: Configurati
  * APIInfoApi - functional programming interface
  * @export
  */
-export const APIInfoApiFp = function(configuration?: Configuration) {
+export const APIInfoApiFp = function (configuration?: Configuration) {
     return {
         /**
          * Get API version
@@ -1790,7 +1790,7 @@ export const AlertsApiFetchParamCreator = function (configuration?: Configuratio
         createAlert(alert: Alert, options: any = {}): FetchArgs {
             // verify required parameter 'alert' is not null or undefined
             if (alert === null || alert === undefined) {
-                throw new RequiredError('alert','Required parameter alert was null or undefined when calling createAlert.');
+                throw new RequiredError('alert', 'Required parameter alert was null or undefined when calling createAlert.');
             }
             const localVarPath = `/alert`;
             const localVarUrlObj = url.parse(localVarPath, true);
@@ -1805,7 +1805,7 @@ export const AlertsApiFetchParamCreator = function (configuration?: Configuratio
             delete localVarUrlObj.search;
             localVarRequestOptions.headers = Object.assign({}, localVarHeaderParameter, options.headers);
             const needsSerialization = (<any>"Alert" !== "string") || localVarRequestOptions.headers['Content-Type'] === 'application/json';
-            localVarRequestOptions.body =  needsSerialization ? JSON.stringify(alert || {}) : (alert || "");
+            localVarRequestOptions.body = needsSerialization ? JSON.stringify(alert || {}) : (alert || "");
 
             return {
                 url: url.format(localVarUrlObj),
@@ -1822,7 +1822,7 @@ export const AlertsApiFetchParamCreator = function (configuration?: Configuratio
         deleteAlert(id: string, options: any = {}): FetchArgs {
             // verify required parameter 'id' is not null or undefined
             if (id === null || id === undefined) {
-                throw new RequiredError('id','Required parameter id was null or undefined when calling deleteAlert.');
+                throw new RequiredError('id', 'Required parameter id was null or undefined when calling deleteAlert.');
             }
             const localVarPath = `/alert/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
@@ -1851,7 +1851,7 @@ export const AlertsApiFetchParamCreator = function (configuration?: Configuratio
         getAlert(id: string, options: any = {}): FetchArgs {
             // verify required parameter 'id' is not null or undefined
             if (id === null || id === undefined) {
-                throw new RequiredError('id','Required parameter id was null or undefined when calling getAlert.');
+                throw new RequiredError('id', 'Required parameter id was null or undefined when calling getAlert.');
             }
             const localVarPath = `/alert/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
@@ -1900,7 +1900,7 @@ export const AlertsApiFetchParamCreator = function (configuration?: Configuratio
  * AlertsApi - functional programming interface
  * @export
  */
-export const AlertsApiFp = function(configuration?: Configuration) {
+export const AlertsApiFp = function (configuration?: Configuration) {
     return {
         /**
          * Create an alert
@@ -2100,7 +2100,7 @@ export const CapturesApiFetchParamCreator = function (configuration?: Configurat
         createCapture(capture: Capture, options: any = {}): FetchArgs {
             // verify required parameter 'capture' is not null or undefined
             if (capture === null || capture === undefined) {
-                throw new RequiredError('capture','Required parameter capture was null or undefined when calling createCapture.');
+                throw new RequiredError('capture', 'Required parameter capture was null or undefined when calling createCapture.');
             }
             const localVarPath = `/capture`;
             const localVarUrlObj = url.parse(localVarPath, true);
@@ -2115,7 +2115,7 @@ export const CapturesApiFetchParamCreator = function (configuration?: Configurat
             delete localVarUrlObj.search;
             localVarRequestOptions.headers = Object.assign({}, localVarHeaderParameter, options.headers);
             const needsSerialization = (<any>"Capture" !== "string") || localVarRequestOptions.headers['Content-Type'] === 'application/json';
-            localVarRequestOptions.body =  needsSerialization ? JSON.stringify(capture || {}) : (capture || "");
+            localVarRequestOptions.body = needsSerialization ? JSON.stringify(capture || {}) : (capture || "");
 
             return {
                 url: url.format(localVarUrlObj),
@@ -2132,7 +2132,7 @@ export const CapturesApiFetchParamCreator = function (configuration?: Configurat
         deleteCapture(id: string, options: any = {}): FetchArgs {
             // verify required parameter 'id' is not null or undefined
             if (id === null || id === undefined) {
-                throw new RequiredError('id','Required parameter id was null or undefined when calling deleteCapture.');
+                throw new RequiredError('id', 'Required parameter id was null or undefined when calling deleteCapture.');
             }
             const localVarPath = `/capture/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
@@ -2161,7 +2161,7 @@ export const CapturesApiFetchParamCreator = function (configuration?: Configurat
         getCapture(id: string, options: any = {}): FetchArgs {
             // verify required parameter 'id' is not null or undefined
             if (id === null || id === undefined) {
-                throw new RequiredError('id','Required parameter id was null or undefined when calling getCapture.');
+                throw new RequiredError('id', 'Required parameter id was null or undefined when calling getCapture.');
             }
             const localVarPath = `/capture/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
@@ -2210,7 +2210,7 @@ export const CapturesApiFetchParamCreator = function (configuration?: Configurat
  * CapturesApi - functional programming interface
  * @export
  */
-export const CapturesApiFp = function(configuration?: Configuration) {
+export const CapturesApiFp = function (configuration?: Configuration) {
     return {
         /**
          * Create a capture
@@ -2410,7 +2410,7 @@ export const ConfigApiFetchParamCreator = function (configuration?: Configuratio
         getConfig(key: string, options: any = {}): FetchArgs {
             // verify required parameter 'key' is not null or undefined
             if (key === null || key === undefined) {
-                throw new RequiredError('key','Required parameter key was null or undefined when calling getConfig.');
+                throw new RequiredError('key', 'Required parameter key was null or undefined when calling getConfig.');
             }
             const localVarPath = `/config/{key}`
                 .replace(`{${"key"}}`, encodeURIComponent(String(key)));
@@ -2436,7 +2436,7 @@ export const ConfigApiFetchParamCreator = function (configuration?: Configuratio
  * ConfigApi - functional programming interface
  * @export
  */
-export const ConfigApiFp = function(configuration?: Configuration) {
+export const ConfigApiFp = function (configuration?: Configuration) {
     return {
         /**
          * Get configuration value
@@ -2516,7 +2516,7 @@ export const EdgeRulesApiFetchParamCreator = function (configuration?: Configura
         createEdgeRule(edge_rule: EdgeRule, options: any = {}): FetchArgs {
             // verify required parameter 'edge_rule' is not null or undefined
             if (edge_rule === null || edge_rule === undefined) {
-                throw new RequiredError('edge_rule','Required parameter edge_rule was null or undefined when calling createEdgeRule.');
+                throw new RequiredError('edge_rule', 'Required parameter edge_rule was null or undefined when calling createEdgeRule.');
             }
             const localVarPath = `/edgerule`;
             const localVarUrlObj = url.parse(localVarPath, true);
@@ -2531,7 +2531,7 @@ export const EdgeRulesApiFetchParamCreator = function (configuration?: Configura
             delete localVarUrlObj.search;
             localVarRequestOptions.headers = Object.assign({}, localVarHeaderParameter, options.headers);
             const needsSerialization = (<any>"EdgeRule" !== "string") || localVarRequestOptions.headers['Content-Type'] === 'application/json';
-            localVarRequestOptions.body =  needsSerialization ? JSON.stringify(edge_rule || {}) : (edge_rule || "");
+            localVarRequestOptions.body = needsSerialization ? JSON.stringify(edge_rule || {}) : (edge_rule || "");
 
             return {
                 url: url.format(localVarUrlObj),
@@ -2548,7 +2548,7 @@ export const EdgeRulesApiFetchParamCreator = function (configuration?: Configura
         deleteEdgeRule(id: string, options: any = {}): FetchArgs {
             // verify required parameter 'id' is not null or undefined
             if (id === null || id === undefined) {
-                throw new RequiredError('id','Required parameter id was null or undefined when calling deleteEdgeRule.');
+                throw new RequiredError('id', 'Required parameter id was null or undefined when calling deleteEdgeRule.');
             }
             const localVarPath = `/edgerule/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
@@ -2577,7 +2577,7 @@ export const EdgeRulesApiFetchParamCreator = function (configuration?: Configura
         getEdgeRule(id: string, options: any = {}): FetchArgs {
             // verify required parameter 'id' is not null or undefined
             if (id === null || id === undefined) {
-                throw new RequiredError('id','Required parameter id was null or undefined when calling getEdgeRule.');
+                throw new RequiredError('id', 'Required parameter id was null or undefined when calling getEdgeRule.');
             }
             const localVarPath = `/edgerule/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
@@ -2626,7 +2626,7 @@ export const EdgeRulesApiFetchParamCreator = function (configuration?: Configura
  * EdgeRulesApi - functional programming interface
  * @export
  */
-export const EdgeRulesApiFp = function(configuration?: Configuration) {
+export const EdgeRulesApiFp = function (configuration?: Configuration) {
     return {
         /**
          * Create an edge rule
@@ -2826,7 +2826,7 @@ export const InjectionsApiFetchParamCreator = function (configuration?: Configur
         createPacketInjection(injection: PacketInjection, options: any = {}): FetchArgs {
             // verify required parameter 'injection' is not null or undefined
             if (injection === null || injection === undefined) {
-                throw new RequiredError('injection','Required parameter injection was null or undefined when calling createPacketInjection.');
+                throw new RequiredError('injection', 'Required parameter injection was null or undefined when calling createPacketInjection.');
             }
             const localVarPath = `/injectpacket`;
             const localVarUrlObj = url.parse(localVarPath, true);
@@ -2841,7 +2841,7 @@ export const InjectionsApiFetchParamCreator = function (configuration?: Configur
             delete localVarUrlObj.search;
             localVarRequestOptions.headers = Object.assign({}, localVarHeaderParameter, options.headers);
             const needsSerialization = (<any>"PacketInjection" !== "string") || localVarRequestOptions.headers['Content-Type'] === 'application/json';
-            localVarRequestOptions.body =  needsSerialization ? JSON.stringify(injection || {}) : (injection || "");
+            localVarRequestOptions.body = needsSerialization ? JSON.stringify(injection || {}) : (injection || "");
 
             return {
                 url: url.format(localVarUrlObj),
@@ -2858,7 +2858,7 @@ export const InjectionsApiFetchParamCreator = function (configuration?: Configur
         deletePacketInjection(id: string, options: any = {}): FetchArgs {
             // verify required parameter 'id' is not null or undefined
             if (id === null || id === undefined) {
-                throw new RequiredError('id','Required parameter id was null or undefined when calling deletePacketInjection.');
+                throw new RequiredError('id', 'Required parameter id was null or undefined when calling deletePacketInjection.');
             }
             const localVarPath = `/injectpacket/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
@@ -2887,7 +2887,7 @@ export const InjectionsApiFetchParamCreator = function (configuration?: Configur
         getPacketInjection(id: string, options: any = {}): FetchArgs {
             // verify required parameter 'id' is not null or undefined
             if (id === null || id === undefined) {
-                throw new RequiredError('id','Required parameter id was null or undefined when calling getPacketInjection.');
+                throw new RequiredError('id', 'Required parameter id was null or undefined when calling getPacketInjection.');
             }
             const localVarPath = `/injectpacket/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
@@ -2936,7 +2936,7 @@ export const InjectionsApiFetchParamCreator = function (configuration?: Configur
  * InjectionsApi - functional programming interface
  * @export
  */
-export const InjectionsApiFp = function(configuration?: Configuration) {
+export const InjectionsApiFp = function (configuration?: Configuration) {
     return {
         /**
          * Create an injection
@@ -3137,11 +3137,11 @@ export const LoginApiFetchParamCreator = function (configuration?: Configuration
         login(username: string, password: string, options: any = {}): FetchArgs {
             // verify required parameter 'username' is not null or undefined
             if (username === null || username === undefined) {
-                throw new RequiredError('username','Required parameter username was null or undefined when calling login.');
+                throw new RequiredError('username', 'Required parameter username was null or undefined when calling login.');
             }
             // verify required parameter 'password' is not null or undefined
             if (password === null || password === undefined) {
-                throw new RequiredError('password','Required parameter password was null or undefined when calling login.');
+                throw new RequiredError('password', 'Required parameter password was null or undefined when calling login.');
             }
             const localVarPath = `/login`;
             const localVarUrlObj = url.parse(localVarPath, true);
@@ -3178,7 +3178,7 @@ export const LoginApiFetchParamCreator = function (configuration?: Configuration
  * LoginApi - functional programming interface
  * @export
  */
-export const LoginApiFp = function(configuration?: Configuration) {
+export const LoginApiFp = function (configuration?: Configuration) {
     return {
         /**
          * Login
@@ -3261,7 +3261,7 @@ export const NodeRulesApiFetchParamCreator = function (configuration?: Configura
         createNodeRule(node_rule: NodeRule, options: any = {}): FetchArgs {
             // verify required parameter 'node_rule' is not null or undefined
             if (node_rule === null || node_rule === undefined) {
-                throw new RequiredError('node_rule','Required parameter node_rule was null or undefined when calling createNodeRule.');
+                throw new RequiredError('node_rule', 'Required parameter node_rule was null or undefined when calling createNodeRule.');
             }
             const localVarPath = `/noderule`;
             const localVarUrlObj = url.parse(localVarPath, true);
@@ -3276,7 +3276,7 @@ export const NodeRulesApiFetchParamCreator = function (configuration?: Configura
             delete localVarUrlObj.search;
             localVarRequestOptions.headers = Object.assign({}, localVarHeaderParameter, options.headers);
             const needsSerialization = (<any>"NodeRule" !== "string") || localVarRequestOptions.headers['Content-Type'] === 'application/json';
-            localVarRequestOptions.body =  needsSerialization ? JSON.stringify(node_rule || {}) : (node_rule || "");
+            localVarRequestOptions.body = needsSerialization ? JSON.stringify(node_rule || {}) : (node_rule || "");
 
             return {
                 url: url.format(localVarUrlObj),
@@ -3293,7 +3293,7 @@ export const NodeRulesApiFetchParamCreator = function (configuration?: Configura
         deleteNodeRule(id: string, options: any = {}): FetchArgs {
             // verify required parameter 'id' is not null or undefined
             if (id === null || id === undefined) {
-                throw new RequiredError('id','Required parameter id was null or undefined when calling deleteNodeRule.');
+                throw new RequiredError('id', 'Required parameter id was null or undefined when calling deleteNodeRule.');
             }
             const localVarPath = `/noderule/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
@@ -3322,7 +3322,7 @@ export const NodeRulesApiFetchParamCreator = function (configuration?: Configura
         getNodeRule(id: string, options: any = {}): FetchArgs {
             // verify required parameter 'id' is not null or undefined
             if (id === null || id === undefined) {
-                throw new RequiredError('id','Required parameter id was null or undefined when calling getNodeRule.');
+                throw new RequiredError('id', 'Required parameter id was null or undefined when calling getNodeRule.');
             }
             const localVarPath = `/noderule/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
@@ -3371,7 +3371,7 @@ export const NodeRulesApiFetchParamCreator = function (configuration?: Configura
  * NodeRulesApi - functional programming interface
  * @export
  */
-export const NodeRulesApiFp = function(configuration?: Configuration) {
+export const NodeRulesApiFp = function (configuration?: Configuration) {
     return {
         /**
          * Create a node rule
@@ -3571,7 +3571,7 @@ export const PCAPApiFetchParamCreator = function (configuration?: Configuration)
         injectPCAP(status: string, options: any = {}): FetchArgs {
             // verify required parameter 'status' is not null or undefined
             if (status === null || status === undefined) {
-                throw new RequiredError('status','Required parameter status was null or undefined when calling injectPCAP.');
+                throw new RequiredError('status', 'Required parameter status was null or undefined when calling injectPCAP.');
             }
             const localVarPath = `/pcap`;
             const localVarUrlObj = url.parse(localVarPath, true);
@@ -3586,7 +3586,7 @@ export const PCAPApiFetchParamCreator = function (configuration?: Configuration)
             delete localVarUrlObj.search;
             localVarRequestOptions.headers = Object.assign({}, localVarHeaderParameter, options.headers);
             const needsSerialization = (<any>"string" !== "string") || localVarRequestOptions.headers['Content-Type'] === 'application/json';
-            localVarRequestOptions.body =  needsSerialization ? JSON.stringify(status || {}) : (status || "");
+            localVarRequestOptions.body = needsSerialization ? JSON.stringify(status || {}) : (status || "");
 
             return {
                 url: url.format(localVarUrlObj),
@@ -3600,7 +3600,7 @@ export const PCAPApiFetchParamCreator = function (configuration?: Configuration)
  * PCAPApi - functional programming interface
  * @export
  */
-export const PCAPApiFp = function(configuration?: Configuration) {
+export const PCAPApiFp = function (configuration?: Configuration) {
     return {
         /**
          * Inject PCAP
@@ -3700,7 +3700,7 @@ export const StatusApiFetchParamCreator = function (configuration?: Configuratio
  * StatusApi - functional programming interface
  * @export
  */
-export const StatusApiFp = function(configuration?: Configuration) {
+export const StatusApiFp = function (configuration?: Configuration) {
     return {
         /**
          * Get status
@@ -3800,7 +3800,7 @@ export const TopologyApiFetchParamCreator = function (configuration?: Configurat
         searchTopology(params: TopologyParams, options: any = {}): FetchArgs {
             // verify required parameter 'params' is not null or undefined
             if (params === null || params === undefined) {
-                throw new RequiredError('params','Required parameter params was null or undefined when calling searchTopology.');
+                throw new RequiredError('params', 'Required parameter params was null or undefined when calling searchTopology.');
             }
             const localVarPath = `/topology`;
             const localVarUrlObj = url.parse(localVarPath, true);
@@ -3815,7 +3815,7 @@ export const TopologyApiFetchParamCreator = function (configuration?: Configurat
             delete localVarUrlObj.search;
             localVarRequestOptions.headers = Object.assign({}, localVarHeaderParameter, options.headers);
             const needsSerialization = (<any>"TopologyParams" !== "string") || localVarRequestOptions.headers['Content-Type'] === 'application/json';
-            localVarRequestOptions.body =  needsSerialization ? JSON.stringify(params || {}) : (params || "");
+            localVarRequestOptions.body = needsSerialization ? JSON.stringify(params || {}) : (params || "");
 
             return {
                 url: url.format(localVarUrlObj),
@@ -3829,7 +3829,7 @@ export const TopologyApiFetchParamCreator = function (configuration?: Configurat
  * TopologyApi - functional programming interface
  * @export
  */
-export const TopologyApiFp = function(configuration?: Configuration) {
+export const TopologyApiFp = function (configuration?: Configuration) {
     return {
         /**
          * Get topology
@@ -3948,11 +3948,11 @@ export const WorkflowsApiFetchParamCreator = function (configuration?: Configura
         callWorkflow(id: string, params: WorkflowCall, options: any = {}): FetchArgs {
             // verify required parameter 'id' is not null or undefined
             if (id === null || id === undefined) {
-                throw new RequiredError('id','Required parameter id was null or undefined when calling callWorkflow.');
+                throw new RequiredError('id', 'Required parameter id was null or undefined when calling callWorkflow.');
             }
             // verify required parameter 'params' is not null or undefined
             if (params === null || params === undefined) {
-                throw new RequiredError('params','Required parameter params was null or undefined when calling callWorkflow.');
+                throw new RequiredError('params', 'Required parameter params was null or undefined when calling callWorkflow.');
             }
             const localVarPath = `/workflow/{id}/call`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
@@ -3968,7 +3968,7 @@ export const WorkflowsApiFetchParamCreator = function (configuration?: Configura
             delete localVarUrlObj.search;
             localVarRequestOptions.headers = Object.assign({}, localVarHeaderParameter, options.headers);
             const needsSerialization = (<any>"WorkflowCall" !== "string") || localVarRequestOptions.headers['Content-Type'] === 'application/json';
-            localVarRequestOptions.body =  needsSerialization ? JSON.stringify(params || {}) : (params || "");
+            localVarRequestOptions.body = needsSerialization ? JSON.stringify(params || {}) : (params || "");
 
             return {
                 url: url.format(localVarUrlObj),
@@ -3985,7 +3985,7 @@ export const WorkflowsApiFetchParamCreator = function (configuration?: Configura
         createWorkflow(workflow: Workflow, options: any = {}): FetchArgs {
             // verify required parameter 'workflow' is not null or undefined
             if (workflow === null || workflow === undefined) {
-                throw new RequiredError('workflow','Required parameter workflow was null or undefined when calling createWorkflow.');
+                throw new RequiredError('workflow', 'Required parameter workflow was null or undefined when calling createWorkflow.');
             }
             const localVarPath = `/workflow`;
             const localVarUrlObj = url.parse(localVarPath, true);
@@ -4000,7 +4000,7 @@ export const WorkflowsApiFetchParamCreator = function (configuration?: Configura
             delete localVarUrlObj.search;
             localVarRequestOptions.headers = Object.assign({}, localVarHeaderParameter, options.headers);
             const needsSerialization = (<any>"Workflow" !== "string") || localVarRequestOptions.headers['Content-Type'] === 'application/json';
-            localVarRequestOptions.body =  needsSerialization ? JSON.stringify(workflow || {}) : (workflow || "");
+            localVarRequestOptions.body = needsSerialization ? JSON.stringify(workflow || {}) : (workflow || "");
 
             return {
                 url: url.format(localVarUrlObj),
@@ -4017,7 +4017,7 @@ export const WorkflowsApiFetchParamCreator = function (configuration?: Configura
         deleteWorkflow(id: string, options: any = {}): FetchArgs {
             // verify required parameter 'id' is not null or undefined
             if (id === null || id === undefined) {
-                throw new RequiredError('id','Required parameter id was null or undefined when calling deleteWorkflow.');
+                throw new RequiredError('id', 'Required parameter id was null or undefined when calling deleteWorkflow.');
             }
             const localVarPath = `/workflow/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
@@ -4046,7 +4046,7 @@ export const WorkflowsApiFetchParamCreator = function (configuration?: Configura
         getWorkflow(id: string, options: any = {}): FetchArgs {
             // verify required parameter 'id' is not null or undefined
             if (id === null || id === undefined) {
-                throw new RequiredError('id','Required parameter id was null or undefined when calling getWorkflow.');
+                throw new RequiredError('id', 'Required parameter id was null or undefined when calling getWorkflow.');
             }
             const localVarPath = `/workflow/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
@@ -4095,7 +4095,7 @@ export const WorkflowsApiFetchParamCreator = function (configuration?: Configura
  * WorkflowsApi - functional programming interface
  * @export
  */
-export const WorkflowsApiFp = function(configuration?: Configuration) {
+export const WorkflowsApiFp = function (configuration?: Configuration) {
     return {
         /**
          * Call workflow
