@@ -1,10 +1,11 @@
 import * as React from "react"
-import { Paper, Typography, Input, Button } from "@material-ui/core"
+import { Paper, Typography, Button, Grid, TextField } from "@material-ui/core"
 import { styles } from './IpPathTracingStyles'
 import { withStyles } from '@material-ui/core/styles'
 
 interface Props {
     tracePath: (srcIP: string, destIP: string) => void
+    clearPath: () => void
     classes: any
 }
 
@@ -34,8 +35,16 @@ class IpPathTracing extends React.Component<Props, State> {
         }))
     }
 
-    handleSubmit = (e) => {
+    handleSearch = () => {
         this.props.tracePath(this.state.srcIP, this.state.destIP)
+    }
+
+    handleClear = () => {
+        this.props.clearPath()
+        this.setState({
+            srcIP: "",
+            destIP: "",
+        })
     }
 
     render() {
@@ -46,25 +55,35 @@ class IpPathTracing extends React.Component<Props, State> {
                 <Typography component="h6" color="primary" gutterBottom>
                     Lookup Path
                   </Typography>
-                <Input
-                    required
+                <TextField
+                    label="Source IP"
                     name="srcIP"
-                    placeholder="Source IP"
-                    // margin="dense"
+                    margin="dense"
+                    variant="outlined"
                     value={this.state.srcIP}
                     onChange={this.handleChange}
                 />
-                <Input
-                    required
+                <TextField
+                    label="Destination IP"
                     name="destIP"
-                    placeholder="Dest IP"
-                    // margin="dense"
+                    margin="dense"
+                    variant="outlined"
                     value={this.state.destIP}
                     onChange={this.handleChange}
                 />
-                <Button variant="contained" color="primary" onClick={this.handleSubmit}>
-                    Find
-                </Button>
+                <Grid container className={classes.formButton} direction="row" justify="flex-end" spacing={2}>
+                    <Grid item>
+                        <Button variant="contained" color="primary" onClick={this.handleSearch}>
+                            Find
+                        </Button>
+                    </Grid>
+                    <Grid item>
+                        <Button variant="contained" color="default" onClick={this.handleClear}>
+                            Clear
+                        </Button>
+                    </Grid>
+                </Grid>
+
             </Paper>
         )
     }

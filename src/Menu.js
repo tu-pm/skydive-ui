@@ -36,7 +36,7 @@ export const mainListItems = (
 
 export const helpListItems = (
     <div>
-        <ListItem button>
+        {/* <ListItem button>
             <ListItemIcon>
                 <LibraryBooksIcon />
             </ListItemIcon>
@@ -47,6 +47,6 @@ export const helpListItems = (
                 <InfoIcon />
             </ListItemIcon>
             <ListItemText primary="About" />
-        </ListItem>
+        </ListItem> */}
     </div>
 );

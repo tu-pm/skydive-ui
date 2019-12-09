@@ -46,7 +46,7 @@ import Menu from '@material-ui/core/Menu'
 import Fab from '@material-ui/core/Fab'
 import { withRouter } from 'react-router-dom'
 import Badge from '@material-ui/core/Badge'
-import ShoppingCartIcon from '@material-ui/icons/ShoppingCart'
+import LocationOnIcon from '@material-ui/icons/LocationOn'
 
 import { styles } from './AppStyles'
 import { Topology, Node, NodeAttrs, LinkAttrs, LinkTagState, Link } from './Topology'
@@ -58,7 +58,6 @@ import DefaultConfig from './Config'
 import IpPathTracing from './IpPathTracing'
 
 import './App.css'
-import Logo from '../assets/Logo.png'
 
 const queryString = require('query-string')
 
@@ -637,7 +636,7 @@ class App extends React.Component<Props, State> {
               <MenuIcon />
             </IconButton>
             <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-              <img src={Logo} alt="logo" />
+              Skydive
             </Typography>
             <div className={classes.search}>
               <AutoCompleteInput placeholder="metadata value" suggestions={this.state.suggestions} onChange={this.onSearchChange.bind(this)} />
@@ -650,7 +649,7 @@ class App extends React.Component<Props, State> {
                 onClick={(event: React.MouseEvent<HTMLElement>) => this.props.selection.length > 0 && this.openMenu("selection", event)}
                 color="inherit">
                 <Badge badgeContent={this.props.selection.length} color="secondary">
-                  <ShoppingCartIcon />
+                  <LocationOnIcon />
                 </Badge>
               </IconButton>
               <Menu
@@ -757,7 +756,10 @@ class App extends React.Component<Props, State> {
                 </Paper>
               </Grid>
               <Grid item xs={7}>
-                {this.tc && <IpPathTracing tracePath={this.tc.tracePath.bind(this.tc)} />}
+                {this.tc && <IpPathTracing
+                  tracePath={this.tc.tracePath.bind(this.tc)}
+                  clearPath={this.tc.clearHighlightedPath.bind(this.tc)}
+                />}
               </Grid>
             </Grid>
           </Container>

@@ -590,30 +590,50 @@ export class Topology extends React.Component<Props, {}> {
     }
 
     tracePath(srcAddr: string, destAddr: string) {
-        var nodes = new Array<Node | undefined>()
+        this.clearHighlightedPath()
+
+        var path = this.getPathNodes(srcAddr, destAddr)
+        if (path.nodes.length === 0) {
+            alert("No path found")
+            return
+        }
+        var linkMetadata = {
+            SourceIP: srcAddr,
+            DestinationIP: destAddr,
+            ...path.tunnel,
+        }
+        this.highlightPath(path.nodes, "tunnel", linkMetadata)
+
+    }
+
+    getPathNodes(srcAddr: string, destAddr: string): { nodes: Array<Node | undefined>, tunnel: any } {
+        var path = {
+            nodes: new Array<Node | undefined>(),
+            tunnel: undefined,
+        }
 
         var srcTap = this.getNodeFromIPv4(srcAddr)
         if (!srcTap) {
-            return
+            return path
         }
         var destTap = this.getNodeFromIPv4(destAddr)
         if (!destTap) {
-            return
+            return path
         }
         var srcVhost = this.getNeighborByType(srcTap, "vhost")
         if (!srcVhost) {
-            return
+            return path
         }
         var destVhost = this.getNeighborByType(destTap, "vhost")
         if (!destVhost) {
-            return
+            return path
         }
         var srcVM = this.getNeighborByType(srcTap, "libvirt")
         var destVM = this.getNeighborByType(destTap, "libvirt")
 
         // List of nodes that will be highlighted
         if (srcVhost === destVhost) {
-            nodes = [srcVM, srcTap, srcVhost, destTap, destVM]
+            path.nodes = [srcVM, srcTap, srcVhost, destTap, destVM]
         } else {
             // Check if there's a route from source vhost to dest vhost with ip dest prefix
             if (srcVhost.data.Tunnels && destVhost.data.IPV4) {
@@ -622,6 +642,7 @@ export class Topology extends React.Component<Props, {}> {
                 for (let tunnel of srcVhost.data.Tunnels) {
                     if (destIPs.includes(tunnel.DestinationIP)
                         && destAddr === tunnel.Prefix.split("/")[0]) {
+                        path.tunnel = tunnel
                         hasRoute = true
                         break
                     }
@@ -629,23 +650,11 @@ export class Topology extends React.Component<Props, {}> {
                 if (hasRoute) {
                     var srcHost = srcTap.parent
                     var destHost = destTap.parent
-                    nodes = [srcVM, srcTap, srcVhost, srcHost, destHost, destVhost, destTap, destVM]
+                    path.nodes = [srcVM, srcTap, srcVhost, srcHost, destHost, destVhost, destTap, destVM]
                 }
             }
         }
-
-        var tun = {
-            TunnelType: "MPLSoUDP",
-            VXLANID: "123",
-            Label: "123",
-        }
-
-        var linkMetadata = {
-            SourceIP: srcAddr,
-            DestinationIP: destAddr,
-            ...tun,
-        }
-        this.highlightPath(nodes, "tunnel", linkMetadata)
+        return path
     }
 
     clearHighlightedPath() {
@@ -658,10 +667,10 @@ export class Topology extends React.Component<Props, {}> {
             this.delLink(linkID)
         })
         this.highlightedLinks = []
+        this.renderTree()
     }
 
     highlightPath(nodes: Array<Node | undefined>, linkTag: string, linkMetadata: any) {
-        this.clearHighlightedPath()
 
         // Highlight nodes
         nodes.forEach(node => {
@@ -695,6 +704,7 @@ export class Topology extends React.Component<Props, {}> {
                 this.highlightedLinks.push(linkID)
             }
         })
+        this.renderTree()
     }
 
     addLink(id: string, node1: Node, node2: Node, tags: Array<string>, data: any) {

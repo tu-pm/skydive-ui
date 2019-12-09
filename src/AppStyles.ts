@@ -45,7 +45,7 @@ export const styles = (theme: Theme) => createStyles({
     ...theme.mixins.toolbar,
   },
   appBar: {
-    backgroundColor: theme.palette.common.black,
+    // backgroundColor: theme.palette.common.black,
     zIndex: theme.zIndex.drawer + 1,
     transition: theme.transitions.create(['width', 'margin'], {
       easing: theme.transitions.easing.sharp,
@@ -180,7 +180,7 @@ export const styles = (theme: Theme) => createStyles({
     border: '1px solid #ddd'
   },
   search: {
-    padding: theme.spacing(0.2),
+    padding: theme.spacing(0.5),
     position: 'relative',
     borderRadius: theme.shape.borderRadius,
     backgroundColor: fade(theme.palette.common.white, 0.15),

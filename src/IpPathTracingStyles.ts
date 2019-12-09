@@ -9,4 +9,7 @@ export const styles = (theme: Theme) => createStyles({
         padding: theme.spacing(2),
         border: '1px solid #ddd'
     },
+    formButton: {
+        marginTop: theme.spacing(1)
+    }
 })
