@@ -31,8 +31,8 @@ import { AppState, openSession, session } from './Store'
 import { styles } from './LoginStyles'
 import { Configuration } from './api/configuration'
 import { LoginApi } from './api'
-
-import Logo from '../assets/Logo-large.png'
+import image from '../assets/bg7.jpg'
+import { Grid, Paper } from "@material-ui/core"
 
 interface Props {
     classes: any
@@ -99,7 +99,7 @@ class Login extends React.Component<Props, State> {
 
         var conf = new Configuration({ basePath: endpoint })
         var api = new LoginApi(conf)
-        
+
         api.login(this.state.username, this.state.password)
             .catch(() => {
                 this.setState({ failure: true })
@@ -127,91 +127,97 @@ class Login extends React.Component<Props, State> {
 
     render() {
         const { classes } = this.props
-
         return (
-            <Container component="main" maxWidth="xs">
-                <CssBaseline />
-                <div className={classes.logo}>
-                    <img src={Logo} alt="logo" className={classes.logoImg} />
-                    <Typography className={classes.logoTitle} variant="h3" component="h3">
-                        SKYDIVE
-                    </Typography>
+            <div
+                className={classes.pageHeader}
+                style={{
+                    backgroundImage: "url(" + image + ")",
+                    backgroundSize: "cover",
+                    backgroundPosition: "top center"
+                }}
+            >
+                <div className={classes.container}>
+                    <Grid container justify="center">
+                        <Grid item sm={12} md={4}>
+                            <Paper className={classes.paper}>
+                                <Typography className={classes.title} variant="h4" align="center">
+                                    Welcome
+                                </Typography>
+                                {this.state.failure &&
+                                    <React.Fragment>
+                                        <div className={classes.failure}>Login failure</div>
+                                        <div className={classes.failure}>bad Endpoint, Username or Password</div>
+                                    </React.Fragment>
+                                }
+                                <form noValidate onSubmit={this.handleSubmit.bind(this)}>
+                                    <TextField
+                                        variant="outlined"
+                                        margin="normal"
+                                        required
+                                        fullWidth
+                                        id="endpoint"
+                                        label="Endpoint"
+                                        name="endpoint"
+                                        autoComplete="endpoint"
+                                        autoFocus
+                                        value={this.props.session.endpoint}
+                                        onChange={this.handleChange.bind(this)}
+                                    />
+                                    {this.state.submitted && !this.state.endpoint &&
+                                        <div className={classes.error}>Endpoint is required</div>
+                                    }
+                                    <TextField
+                                        variant="outlined"
+                                        margin="normal"
+                                        required
+                                        fullWidth
+                                        id="username"
+                                        label="Username"
+                                        name="username"
+                                        autoComplete="username"
+                                        autoFocus
+                                        value={this.state.username}
+                                        onChange={this.handleChange.bind(this)}
+                                    />
+                                    {this.state.submitted && !this.state.username &&
+                                        <div className={classes.error}>Username is required</div>
+                                    }
+                                    <TextField
+                                        variant="outlined"
+                                        margin="normal"
+                                        required
+                                        fullWidth
+                                        name="password"
+                                        label="Password"
+                                        type="password"
+                                        id="password"
+                                        autoComplete="current-password"
+                                        value={this.state.password}
+                                        onChange={this.handleChange.bind(this)}
+                                    />
+                                    {this.state.submitted && !this.state.password &&
+                                        <div className={classes.error}>Password is required</div>
+                                    }
+                                    <FormControlLabel
+                                        control={<Checkbox value="remember" color="primary" />}
+                                        label="Remember me"
+                                        name="persistent"
+                                        value={true}
+                                        onChange={this.handleChange.bind(this)}
+                                    />
+                                    <Button
+                                        type="submit"
+                                        fullWidth
+                                        variant="contained"
+                                        color="primary"
+                                        className={classes.submit}
+                                    >Sign In</Button>
+                                </form>
+                            </Paper>
+                        </Grid>
+                    </Grid>
                 </div>
-                <div className={classes.paper}>
-                    {this.state.failure &&
-                        <React.Fragment>
-                            <div className={classes.failure}>Login failure</div>
-                            <div className={classes.failure}>bad Endpoint, Username or Password</div>
-                        </React.Fragment>
-                    }
-                    <form className={classes.form} noValidate onSubmit={this.handleSubmit.bind(this)}>
-                        <TextField
-                            variant="outlined"
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="endpoint"
-                            label="Endpoint"
-                            name="endpoint"
-                            autoComplete="endpoint"
-                            autoFocus
-                            value={this.props.session.endpoint}
-                            onChange={this.handleChange.bind(this)}
-                        />
-                        {this.state.submitted && !this.state.endpoint &&
-                            <div className={classes.error}>Endpoint is required</div>
-                        }
-                        <TextField
-                            variant="outlined"
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="username"
-                            label="Username"
-                            name="username"
-                            autoComplete="username"
-                            autoFocus
-                            value={this.state.username}
-                            onChange={this.handleChange.bind(this)}
-                        />
-                        {this.state.submitted && !this.state.username &&
-                            <div className={classes.error}>Username is required</div>
-                        }
-                        <TextField
-                            variant="outlined"
-                            margin="normal"
-                            required
-                            fullWidth
-                            name="password"
-                            label="Password"
-                            type="password"
-                            id="password"
-                            autoComplete="current-password"
-                            value={this.state.password}
-                            onChange={this.handleChange.bind(this)}
-                        />
-                        {this.state.submitted && !this.state.password &&
-                            <div className={classes.error}>Password is required</div>
-                        }
-                        <FormControlLabel
-                            control={<Checkbox value="remember" color="primary" />}
-                            label="Remember me"
-                            name="persistent"
-                            value={true}
-                            onChange={this.handleChange.bind(this)}
-                        />
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            color="primary"
-                            className={classes.submit}
-                        >
-                            Sign In
-                        </Button>
-                    </form>
-                </div>
-            </Container>
+            </div >
         )
     }
 }
