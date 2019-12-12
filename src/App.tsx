@@ -47,6 +47,7 @@ import Fab from '@material-ui/core/Fab'
 import { withRouter } from 'react-router-dom'
 import Badge from '@material-ui/core/Badge'
 import LocationOnIcon from '@material-ui/icons/LocationOn'
+import SettingsIcon from '@material-ui/icons/Settings'
 
 import { styles } from './AppStyles'
 import { Topology, Node, NodeAttrs, LinkAttrs, LinkTagState, Link } from './Topology'
@@ -58,6 +59,7 @@ import DefaultConfig from './Config'
 import IpPathTracing from './IpPathTracing'
 
 import './App.css'
+import { ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
 
 const queryString = require('query-string')
 
@@ -562,6 +564,10 @@ class App extends React.Component<Props, State> {
     this.props.history.push("/login")
   }
 
+  admin() {
+    this.props.history.push("/admin")
+  }
+
   activeNodeTag(tag: string) {
     if (!this.tc) {
       return
@@ -708,7 +714,14 @@ class App extends React.Component<Props, State> {
             </IconButton>
           </div>
           <Divider />
-          <List>{mainListItems}</List>
+          <List>
+            <ListItem button onClick={this.admin.bind(this)}>
+              <ListItemIcon>
+                <SettingsIcon />
+              </ListItemIcon>
+              <ListItemText primary="Settings" />
+            </ListItem>
+          </List>
           <Divider />
           <List>{helpListItems}</List>
         </Drawer>

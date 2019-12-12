@@ -43,7 +43,7 @@ interface Props {
 }
 
 interface State {
-    endpoint: string
+    // endpoint: string
     username: string
     password: string
     submitted: boolean
@@ -59,7 +59,7 @@ class Login extends React.Component<Props, State> {
         super(props)
 
         this.state = {
-            endpoint: "",
+            // endpoint: this.props.session.endpoint,
             username: "",
             password: "",
             submitted: false,
@@ -71,9 +71,9 @@ class Login extends React.Component<Props, State> {
     handleChange(e) {
         const { name, value } = e.target;
         switch (name) {
-            case "endpoint":
-                this.setState({ endpoint: value })
-                break
+            // case "endpoint":
+            //     this.setState({ endpoint: value })
+            //     break
             case "username":
                 this.setState({ username: value })
                 break
@@ -95,33 +95,41 @@ class Login extends React.Component<Props, State> {
             return
         }
 
-        var endpoint = this.state.endpoint || this.props.session.endpoint
+        var endpoint = this.props.session.endpoint
 
         var conf = new Configuration({ basePath: endpoint })
         var api = new LoginApi(conf)
 
-        api.login(this.state.username, this.state.password)
-            .catch(() => {
-                this.setState({ failure: true })
-            })
+        fetch('http://127.0.0.1:5000/accounts/', {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(this.state.username + ':' + this.state.password),
+            }
+        })
             .then(response => {
-                if (response) {
-                    this.setState({ failure: false })
-                    return response.json()
-                } else {
-                    this.setState({ failure: true })
-                }
+                console.log(response);
+                return response ? response.json() : undefined
             })
             .then(data => {
-                if (data) {
-                    this.props.openSession(endpoint, this.state.username, data.Token, data.Permissions, this.state.persistent)
+                console.log(data);
+
+                if (data && data._items && data._items.length > 0) {
+                    this.setState({ failure: false })
+                    this.props.openSession(endpoint, this.state.username, data._items[0].token, data._items[0].roles, this.state.persistent)
 
                     var from = "/"
                     if (this.props.location.state && this.props.location.state.from !== "/login") {
                         from = this.props.location.state.from
                     }
                     this.props.history.push(from)
+                } else {
+                    this.setState({ failure: true })
                 }
+            })
+            .catch(() => {
+                this.setState({ failure: true })
             })
     }
 
@@ -145,12 +153,11 @@ class Login extends React.Component<Props, State> {
                                 </Typography>
                                 {this.state.failure &&
                                     <React.Fragment>
-                                        <div className={classes.failure}>Login failure</div>
-                                        <div className={classes.failure}>bad Endpoint, Username or Password</div>
+                                        <div className={classes.failure}>Login failed: username or password is incorrect.</div>
                                     </React.Fragment>
                                 }
                                 <form noValidate onSubmit={this.handleSubmit.bind(this)}>
-                                    <TextField
+                                    {/* <TextField
                                         variant="outlined"
                                         margin="normal"
                                         required
@@ -165,7 +172,7 @@ class Login extends React.Component<Props, State> {
                                     />
                                     {this.state.submitted && !this.state.endpoint &&
                                         <div className={classes.error}>Endpoint is required</div>
-                                    }
+                                    } */}
                                     <TextField
                                         variant="outlined"
                                         margin="normal"

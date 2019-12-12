@@ -28,6 +28,7 @@ import { Router, Route, Redirect, Switch } from 'react-router-dom'
 import Login from './Login'
 import App from './App'
 import Tools from './Tools'
+import AdminPage from './AdminPage'
 
 // expose some tools
 declare global {
@@ -44,12 +45,23 @@ export const mapStateToProps = (state: AppState) => ({
 export const mapDispatchToProps = ({
 })
 
-const PrivateRoute = connect(mapStateToProps, mapDispatchToProps)(({ component, session, ...props }: any) => {
-  const routeComponent = (props: any) => (
-    session.endpoint
+const TopoRoute = connect(mapStateToProps, mapDispatchToProps)(({ component, session, ...props }: any) => {
+  const routeComponent = (props: any) => {
+    return session.token
       ? React.createElement(component, props)
       : <Redirect to={{ pathname: '/login' }} />
-  )
+  }
+  return <Route {...props} render={routeComponent} />
+})
+
+const AdminRoute = connect(mapStateToProps, mapDispatchToProps)(({ component, session, ...props }: any) => {
+  const routeComponent = (props: any) => {
+    return session.token
+      ? (session.permissions.includes("admin")
+        ? React.createElement(component, props)
+        : <Redirect to={{ pathname: '/' }} />)
+      : <Redirect to={{ pathname: '/login' }} />
+  }
   return <Route {...props} render={routeComponent} />
 })
 
@@ -58,11 +70,12 @@ ReactDOM.render(
     <SnackbarProvider>
       <Router history={history}>
         <Switch>
-          <PrivateRoute path="/" component={App} exact />
+          <TopoRoute path="/" component={App} exact />
+          <AdminRoute path="/admin" component={AdminPage} />
           <Route path="/login" component={Login} />
           <Redirect from="*" to="/" />
         </Switch>
-      </Router>
+      </Router>,
     </SnackbarProvider>
   </Provider>,
   document.getElementById('index')
