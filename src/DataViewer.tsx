@@ -66,6 +66,8 @@ export class DataViewer extends React.Component<Props, State> {
             var graph = props.graph
             if (state.graph) {
                 graph.data = state.graph.data.concat(graph.data.slice(1))
+            } else {
+                graph.data[1] = [new Date(graph.data[1][0] - 30), 0, 0]
             }
             return {
                 graph: graph

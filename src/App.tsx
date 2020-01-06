@@ -626,7 +626,7 @@ class App extends React.Component<Props, State> {
     return (
       <div className={classes.app}>
         <CssBaseline />
-        {!this.staticDataURL &&
+        {!this.staticDataURL && this.subscriberURL() &&
           <Websocket ref={node => this.websocket = node} url={this.subscriberURL()} onOpen={this.onWebSocketOpen.bind(this)}
             onMessage={this.onWebSocketMessage.bind(this)} onClose={this.onWebSocketClose.bind(this)}
             reconnectIntervalInMilliSeconds={2500} />

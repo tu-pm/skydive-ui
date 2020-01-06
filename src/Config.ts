@@ -5,7 +5,7 @@ var DefaultConfig = {
     nodeAttrs: function (node: Node) {
         var name = node.data.Name
         if (node.data.Nova) {
-          name = node.data.Nova.Name
+            name = node.data.Nova.Name
         }
         if (name.length > 24) {
             name = node.data.Name.substring(0, 24) + "."
@@ -176,18 +176,18 @@ var DefaultConfig = {
 
         return attrs
     },
-    nodeMenu: function(node: Node) {
+    nodeMenu: function (node: Node) {
         return [
             { class: "", text: "Capture", disabled: false, callback: () => { console.log("Capture") } },
             { class: "", text: "Capture all", disabled: true, callback: () => { console.log("Capture all") } },
             { class: "", text: "Injection", disabled: false, callback: () => { console.log("Injection") } },
             { class: "", text: "Flows", disabled: false, callback: () => { console.log("Flows") } }
-          ]
+        ]
     },
     nodeTags: function (data) {
         if (data.Manager && data.Manager === "k8s") {
             return ["kubernetes"]
-        } else if (data.Manager && data.Manager === "TungstenFabric"){
+        } else if (data.Manager && data.Manager === "TungstenFabric") {
             return ["tungstenfabric"]
         } else {
             return ["infrastructure"]
@@ -363,7 +363,7 @@ var DefaultConfig = {
                             "RxBytes",
                             "TxBytes"
                         ],
-                        [new Date(data.Last || 0), data.RxBytes || 0, data.TxBytes || 0]
+                        [data.Last ? new Date(data.Last) : new Date(), data.RxBytes || 0, data.TxBytes || 0]
                     ]
                 }
             }

@@ -43,7 +43,7 @@ interface Props {
 }
 
 interface State {
-    // endpoint: string
+    endpoint: string
     username: string
     password: string
     submitted: boolean
@@ -59,7 +59,7 @@ class Login extends React.Component<Props, State> {
         super(props)
 
         this.state = {
-            // endpoint: this.props.session.endpoint,
+            endpoint: "",
             username: "",
             password: "",
             submitted: false,
@@ -71,9 +71,6 @@ class Login extends React.Component<Props, State> {
     handleChange(e) {
         const { name, value } = e.target;
         switch (name) {
-            // case "endpoint":
-            //     this.setState({ endpoint: value })
-            //     break
             case "username":
                 this.setState({ username: value })
                 break
@@ -100,24 +97,30 @@ class Login extends React.Component<Props, State> {
         var conf = new Configuration({ basePath: endpoint })
         var api = new LoginApi(conf)
 
-        fetch('http://127.0.0.1:5000/accounts/', {
-            method: 'GET',
-            credentials: 'include',
+        fetch('/api/login', {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(this.state.username + ':' + this.state.password),
-            }
+            },
+            body: JSON.stringify({
+                username: this.state.username,
+                password: this.state.password
+            })
+
         })
             .then(response => {
-                console.log(response);
                 return response ? response.json() : undefined
             })
             .then(data => {
-                console.log(data);
-
-                if (data && data._items && data._items.length > 0) {
+                if (data) {
                     this.setState({ failure: false })
-                    this.props.openSession(endpoint, this.state.username, data._items[0].token, data._items[0].roles, this.state.persistent)
+                    this.props.openSession(
+                        data.endpoint ? data.endpoint : endpoint,
+                        this.state.username,
+                        data.token,
+                        data.permissions,
+                        this.state.persistent
+                    )
 
                     var from = "/"
                     if (this.props.location.state && this.props.location.state.from !== "/login") {
@@ -157,22 +160,6 @@ class Login extends React.Component<Props, State> {
                                     </React.Fragment>
                                 }
                                 <form noValidate onSubmit={this.handleSubmit.bind(this)}>
-                                    {/* <TextField
-                                        variant="outlined"
-                                        margin="normal"
-                                        required
-                                        fullWidth
-                                        id="endpoint"
-                                        label="Endpoint"
-                                        name="endpoint"
-                                        autoComplete="endpoint"
-                                        autoFocus
-                                        value={this.props.session.endpoint}
-                                        onChange={this.handleChange.bind(this)}
-                                    />
-                                    {this.state.submitted && !this.state.endpoint &&
-                                        <div className={classes.error}>Endpoint is required</div>
-                                    } */}
                                     <TextField
                                         variant="outlined"
                                         margin="normal"

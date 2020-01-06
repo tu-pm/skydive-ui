@@ -28,7 +28,6 @@ import { Router, Route, Redirect, Switch } from 'react-router-dom'
 import Login from './Login'
 import App from './App'
 import Tools from './Tools'
-import AdminPage from './AdminPage'
 
 // expose some tools
 declare global {
@@ -47,20 +46,10 @@ export const mapDispatchToProps = ({
 
 const TopoRoute = connect(mapStateToProps, mapDispatchToProps)(({ component, session, ...props }: any) => {
   const routeComponent = (props: any) => {
-    return session.token
-      ? React.createElement(component, props)
-      : <Redirect to={{ pathname: '/login' }} />
-  }
-  return <Route {...props} render={routeComponent} />
-})
-
-const AdminRoute = connect(mapStateToProps, mapDispatchToProps)(({ component, session, ...props }: any) => {
-  const routeComponent = (props: any) => {
-    return session.token
-      ? (session.permissions.includes("admin")
-        ? React.createElement(component, props)
-        : <Redirect to={{ pathname: '/' }} />)
-      : <Redirect to={{ pathname: '/login' }} />
+    // return session.token
+    //   ? React.createElement(component, props)
+    //   : <Redirect to={{ pathname: '/login' }} />
+    return React.createElement(component, props)
   }
   return <Route {...props} render={routeComponent} />
 })
@@ -71,7 +60,6 @@ ReactDOM.render(
       <Router history={history}>
         <Switch>
           <TopoRoute path="/" component={App} exact />
-          <AdminRoute path="/admin" component={AdminPage} />
           <Route path="/login" component={Login} />
           <Redirect from="*" to="/" />
         </Switch>
