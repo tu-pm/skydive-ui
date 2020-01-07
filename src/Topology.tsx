@@ -175,7 +175,7 @@ export interface LinkAttrs {
 
 interface Props {
     onClick: () => void
-    // sortNodesFnc: (node1: NodeWrapper, node2: NodeWrapper) => number
+    sortNodesFnc: (node1: NodeWrapper, node2: NodeWrapper) => number
     onShowNodeContextMenu: (node: Node) => any
     onNodeSelected: (node: Node, isSelected: boolean) => void
     className: string

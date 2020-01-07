@@ -117,7 +117,7 @@ export type ActionTypes = selectElementAction | unselectElementAction | bumpRevi
 
 const emptySession = {
     // endpoint: `${window.location.protocol}//${window.location.hostname}:8082`,
-    endpoint: "http://10.60.17.243:8989",
+    endpoint: "http://10.60.17.231:9001",
     username: "",
     token: "",
     permissions: {},
