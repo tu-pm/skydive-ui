@@ -72,6 +72,10 @@ export const styles = (theme: Theme) => createStyles({
       display: 'block',
     },
   },
+  subTitle: {
+    fontStyle: 'italic',
+    color: '#ddd'
+  },
   drawerPaper: {
     position: 'relative',
     whiteSpace: 'nowrap',
@@ -114,6 +118,7 @@ export const styles = (theme: Theme) => createStyles({
     bottom: 0,
     maxWidth: 'unset',
     width: 'unset',
+    zIndex: 1000,
     paddingTop: theme.spacing(0),
     paddingBottom: theme.spacing(0),
     paddingLeft: theme.spacing(0),
@@ -125,6 +130,9 @@ export const styles = (theme: Theme) => createStyles({
     display: 'flex',
     flexDirection: 'column',
     width: 600,
+    [theme.breakpoints.down('xl')]: {
+      width: 500
+    },
     height: `100%`,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
@@ -194,5 +202,23 @@ export const styles = (theme: Theme) => createStyles({
       marginLeft: theme.spacing(3),
       width: 'auto',
     },
-  }
+  },
+  filtersPanel: {
+    position: 'absolute',
+    right: 20,
+    top: 80,
+    maxWidth: 'unset',
+    width: 'unset',
+    paddingTop: theme.spacing(0),
+    paddingBottom: theme.spacing(0),
+    paddingLeft: theme.spacing(0),
+    paddingRight: theme.spacing(0),
+  },
+  filtersFab: {
+    margin: theme.spacing(1),
+    boxShadow: 'unset',
+    fontWeight: 'unset',
+    fontSize: '0.8rem',
+    padding: '6px 12px !important'
+  },
 })

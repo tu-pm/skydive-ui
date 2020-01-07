@@ -163,6 +163,9 @@ export interface NodeAttrs {
     classes: Array<string>
     icon: string
     iconClass: string
+    href: string
+    badges: Array<string>
+    weight: number
 }
 
 export interface LinkAttrs {
@@ -179,9 +182,14 @@ interface Props {
     nodeAttrs: (node: Node) => NodeAttrs
     linkAttrs: (link: Link) => LinkAttrs
     weightTitles?: Map<number, string>
-    groupBy?: (node: Node) => string
+    groupType?: (node: Node) => string
+    groupName?: (node: Node) => string
     groupSize?: number
     onLinkSelected: (link: Link, isSelected: boolean) => void
+    onLinkTagChange: (tags: Map<string, LinkTagState>) => void
+    onNodeClicked: (node: Node) => void
+    onNodeDblClicked: (node: Node) => void
+    defaultLinkTagMode?: (tag: string) => LinkTagState
 }
 
 /**
@@ -222,6 +230,7 @@ export class Topology extends React.Component<Props, {}> {
     private weights: Array<number>
     private highlightedNodes: Array<Node>
     private highlightedLinks: Array<string>
+    private visibleLinksCache: Array<Link> | undefined
 
     root: Node
     nodes: Map<string, Node>
@@ -230,7 +239,7 @@ export class Topology extends React.Component<Props, {}> {
     linkTagStates: Map<string, LinkTagState>
     weightTitles: Map<number, string>
 
-    constructor(props) {
+    constructor(props: Props) {
         super(props)
 
         this.nodeWidth = 150
@@ -432,15 +441,14 @@ export class Topology extends React.Component<Props, {}> {
     private initTree() {
         var state = { expanded: true, selected: false, mouseover: false, groupOffset: 0, groupFullSize: false }
 
-        this.root = new Node("root", ["root"], { name: "root" }, state, 0)
+        this.root = new Node("root", ["root"], { Name: "root", Type: "root" }, state, 0)
 
         this.nodes = new Map<string, Node>()
         this.nodeTagStates = new Map<string, boolean>()
+        this.nodeTagCount = new Map<string, number>()
 
         this.links = new Map<string, Link>()
         this.linkTagStates = new Map<string, LinkTagState>()
-
-        this.nodeTagCount = new Map<string, number>()
         this.linkTagCount = new Map<string, number>()
 
         this.levelRects = new Array<LevelRect>()
@@ -456,13 +464,16 @@ export class Topology extends React.Component<Props, {}> {
 
     setLinkTagState(tag: string, state: LinkTagState) {
         this.linkTagStates.set(tag, state)
+
+        // invalidate link cache
+        this.visibleLinksCache = undefined
+
         this.renderTree()
     }
 
     showNodeTag(tag: string, active: boolean) {
         this.nodeTagStates.set(tag, active)
-        this.invalidated = true
-        this.renderTree()
+        this.invalidate()
     }
 
     activeNodeTag(tag: string) {
@@ -470,7 +481,16 @@ export class Topology extends React.Component<Props, {}> {
             this.nodeTagStates.set(key, false)
         }
         this.nodeTagStates.set(tag, true)
+        this.invalidate()
+    }
+
+    private invalidate() {
+        // invalidate link cache
+        this.visibleLinksCache = undefined
+
+        // invalidate the whole topology
         this.invalidated = true
+
         this.renderTree()
     }
 
@@ -715,9 +735,13 @@ export class Topology extends React.Component<Props, {}> {
             this.linkTagCount.set(tag, count + 1)
 
             if (!this.linkTagStates.has(tag)) {
-                this.linkTagStates.set(tag, LinkTagState.EventBased)
+                let mode = this.props.defaultLinkTagMode ? this.props.defaultLinkTagMode(tag) : LinkTagState.EventBased
+                this.linkTagStates.set(tag, mode)
             }
         })
+
+        // invalidate link cache
+        this.visibleLinksCache = undefined
     }
 
     updateLink(id: string, data: any): boolean {
@@ -727,6 +751,9 @@ export class Topology extends React.Component<Props, {}> {
 
             // just increase for now, do not use real revision number
             link.revision++
+
+            // invalidate link cache
+            this.visibleLinksCache = undefined
 
             return true
         }
@@ -751,34 +778,36 @@ export class Topology extends React.Component<Props, {}> {
         }
     }
 
-    // group nodes using groupBy and groupSize
+    // group nodes
     private groupify(node: NodeWrapper): Map<string, NodeWrapper> {
         var groups = new Map<string, NodeWrapper>()
 
-        if (!this.props.groupBy) {
-            return groups
+        var nodeTypeGID = (node: Node, child: Node): [string, string] | undefined => {
+            var nodeType = this.props.groupType ? this.props.groupType(child) : child.data.Type
+            if (!nodeType) {
+                return
+            }
+            var gid = node.id + "_" + nodeType + "_" + child.getWeight()
+
+            return [nodeType, gid]
         }
 
         // dispatch node per groups
         node.children.forEach(child => {
-            var field = child.wrapped.data.Type
-            if (!field) {
+            var ntg = nodeTypeGID(node.wrapped, child.wrapped)
+            if (!ntg) {
                 return
             }
-
-            var weight = child.wrapped.getWeight()
-
-            // group only nodes being at the same level, meaning weight
-            var gid = node.id + "_" + field + "_" + weight
-
-            var name = field + '(s)'
+            var [nodeType, gid] = ntg
 
             var wrapper = groups.get(gid)
             if (!wrapper) {
                 var state = this.groupStates.get(gid) || { expanded: false, selected: false, mouseover: false, groupOffset: 0, groupFullSize: false }
                 this.groupStates.set(gid, state)
 
-                var wrapped = new Node(gid, [], { Name: name, "Type": field }, state, () => { return child.wrapped.getWeight() })
+                var name = this.props.groupName ? this.props.groupName(child.wrapped) : nodeType + '(s)'
+
+                var wrapped = new Node(gid, [], { Name: name, Type: nodeType }, state, () => { return child.wrapped.getWeight() })
                 wrapper = new NodeWrapper(gid, WrapperType.Group, wrapped, node)
             }
 
@@ -796,21 +825,26 @@ export class Topology extends React.Component<Props, {}> {
 
         var pushed = new Set<string>()
 
+        // iterate one mode time children in order to
+        // if a group doesn't reach the groupSize, then remove the group
+        // and let the node as it is. If the group reach the groupSize
+        // set the children according to the offset and the groupSize or 
+        // the expand parameter.
         var children = new Array<NodeWrapper>()
         node.children.forEach(child => {
-            var field = child.wrapped.data.Type
-            if (!field) {
-                children.push(child)
+            var ntg = nodeTypeGID(node.wrapped, child.wrapped)
+            if (!ntg) {
                 return
             }
+            var [nodeType, gid] = ntg
 
-            var gid = node.id + "_" + field + "_" + child.wrapped.getWeight()
             if (pushed.has(gid)) {
                 return
             }
 
             var wrapper = groups.get(gid)
-            if (wrapper && wrapper.wrapped.children.length > 5) {
+            var groupSize = this.props.groupSize || defaultGroupSize
+            if (wrapper && wrapper.wrapped.children.length > groupSize) {
                 wrapper.children.sort((a, b) => {
                     if (a.wrapped.sortFirst && !b.wrapped.sortFirst) {
                         return -1
@@ -975,13 +1009,17 @@ export class Topology extends React.Component<Props, {}> {
         node.children.forEach((child: Node) => this.collapse(child))
     }
 
-    private expand(node: NodeWrapper) {
-        if (node.wrapped.state.expanded) {
-            this.collapse(node.wrapped)
+    expand(node: Node) {
+        if (node.state.expanded) {
+            this.collapse(node)
         } else {
-            node.wrapped.state.expanded = true
+            node.state.expanded = true
         }
 
+        // invalidate link cache
+        this.visibleLinksCache = undefined
+
+        // invalidate the whole topology rendering
         this.invalidated = true
 
         this.renderTree()
@@ -1004,8 +1042,12 @@ export class Topology extends React.Component<Props, {}> {
         ]
     }
 
-    private visibleLinks() {
-        var links = Array<Link>()
+    private visibleLinks(): Array<Link> {
+        if (this.visibleLinksCache) {
+            return this.visibleLinksCache
+        }
+
+        var links = new Array<Link>()
 
         var findVisible = (node: Node | undefined) => {
             while (node) {
@@ -1027,6 +1069,9 @@ export class Topology extends React.Component<Props, {}> {
             }
         }
 
+        // clear present tags map
+        var tagPresent = new Map<string, boolean>()
+
         this.links.forEach((link: Link) => {
             if (!(link.tags.some(tag => this.linkTagStates.get(tag) !== LinkTagState.Hidden))) {
                 return
@@ -1036,9 +1081,26 @@ export class Topology extends React.Component<Props, {}> {
             var target = findVisible(link.target)
 
             if (source && target && source.id !== "root" && target.id !== "root" && source !== target) {
+                for (let tag of link.tags) {
+                    tagPresent.set(tag, true)
+                }
+
                 links.push(new Link(link.id, link.tags, source, target, link.data, link.state))
             }
         })
+
+        // build link tag present on the current topology view
+        var tags = new Map<string, LinkTagState>()
+        this.linkTagStates.forEach((v, k) => {
+            if (tagPresent.get(k)) {
+                tags.set(k, v)
+            }
+        })
+
+        this.props.onLinkTagChange(tags)
+
+        // set the cache
+        this.visibleLinksCache = links
 
         return links
     }
@@ -1219,7 +1281,7 @@ export class Topology extends React.Component<Props, {}> {
         })
     }
 
-    selectNode(id: string, active: boolean) {
+    selectNode(id: string, active: boolean = true) {
         if (!this.isCtrlPressed && active) {
             this.unselectAllNodes()
             this.unselectAllLinks()
@@ -1449,7 +1511,10 @@ export class Topology extends React.Component<Props, {}> {
             this.nodeClickedID = 0
 
             this.hideNodeContextMenu()
-            this.selectNode(d.data.id, true)
+
+            if (this.props.onNodeClicked) {
+                this.props.onNodeClicked(d.data.wrapped)
+            }
         }, 170)
     }
 
@@ -1460,7 +1525,9 @@ export class Topology extends React.Component<Props, {}> {
             this.nodeClickedID = 0
         }
 
-        this.expand(d.data)
+        if (this.props.onNodeDblClicked) {
+            this.props.onNodeDblClicked(d.data.wrapped)
+        }
     }
 
     private neighborLinks(node: NodeWrapper, links: Array<Link>): Array<Link> {
@@ -1497,7 +1564,7 @@ export class Topology extends React.Component<Props, {}> {
         while (id) {
             var d = this.d3nodes.get(id)
             if (d) {
-                this.expand(d.data)
+                this.expand(d.data.wrapped)
             } else {
                 // part of a group then slide to the offset
                 var group = this.nodeGroup.get(id)
@@ -2023,8 +2090,8 @@ export class Topology extends React.Component<Props, {}> {
             handleIcon(g.select("g.curly-full-icon"), d, 75, animated, false)
         }
 
-        groupButtonEnter.each(function (d) { handleIcons(select(this), d, true) })
-        groupButton.each(function (d) { handleIcons(select(this), d, true) })
+        groupButtonEnter.each(function (d: NodeWrapper) { handleIcons(select(this), d, true) })
+        groupButton.each(function (d: NodeWrapper) { handleIcons(select(this), d, true) })
 
         groupButton.transition()
             .duration(animDuration)
@@ -2032,6 +2099,8 @@ export class Topology extends React.Component<Props, {}> {
     }
 
     private renderNodes(root: any) {
+        var self = this
+
         var node = this.gNodes.selectAll('g.node')
             .interrupt()
             .data(root.descendants(), (d: D3Node) => d.data.id)
@@ -2077,11 +2146,13 @@ export class Topology extends React.Component<Props, {}> {
             .attr("class", "node-overlay")
             .attr("r", hexSize + 16)
             .style("opacity", 0)
+            .attr("pointer-events", "none")
 
         var highlight = nodeEnter.append("g")
             .attr("id", (d: D3Node) => "node-pinned-" + d.data.id)
             .attr("class", "node-pinned")
             .style("opacity", 0)
+            .attr("pointer-events", "none")
         highlight.append("circle")
             .attr("r", hexSize + 16)
         highlight.append("text")
@@ -2095,31 +2166,42 @@ export class Topology extends React.Component<Props, {}> {
         nodeEnter.append("circle")
             .attr("class", "node-disc")
             .attr("r", hexSize + 8)
+            .attr("pointer-events", "none")
 
         nodeEnter.append("path")
             .attr("class", "node-hexagon")
             .attr("d", (d: D3Node) => this.liner(this.hexagon(d, hexSize)))
+            .attr("pointer-events", "none")
 
         const isImgIcon = (d: D3Node): boolean => {
-            var icon = this.props.nodeAttrs(d.data.wrapped).icon
-            return icon.startsWith("/") || icon.startsWith("http") || icon.startsWith("data:")
+            if (this.props.nodeAttrs(d.data.wrapped).href) {
+                return true
+            }
+            return false
         }
 
-        nodeEnter.filter((d: D3Node) => !isImgIcon(d))
-            .append("text")
-            .attr("class", (d: D3Node) => "node-icon " + this.props.nodeAttrs(d.data.wrapped).iconClass)
-            .attr("dy", 9)
-            .text((d: D3Node) => this.props.nodeAttrs(d.data.wrapped).icon)
+        nodeEnter.each(function (d: D3Node) {
+            var el = select(this)
+            var attrs = self.props.nodeAttrs(d.data.wrapped)
 
-        nodeEnter.filter((d: D3Node) => isImgIcon(d))
-            .append("image")
-            .attr("class", (d: D3Node) => "node-icon " + this.props.nodeAttrs(d.data.wrapped).iconClass)
-            .attr("transform", "translate(-16,-16)")
-            .attr("width", 32)
-            .attr("heigh", 32)
-            .attr("xlink:href", (d: D3Node) => this.props.nodeAttrs(d.data.wrapped).icon)
+            if (isImgIcon(d)) {
+                el.append("image")
+                    .attr("class", (d: D3Node) => "node-icon " + attrs.iconClass)
+                    .attr("transform", "translate(-16,-16)")
+                    .attr("width", 32)
+                    .attr("heigh", 32)
+                    .attr("xlink:href", (d: D3Node) => attrs.href)
+                    .attr("pointer-events", "none")
+            } else {
+                el.append("text")
+                    .attr("class", (d: D3Node) => "node-icon " + attrs.iconClass)
+                    .attr("dy", 9)
+                    .text((d: D3Node) => attrs.icon)
+                    .attr("pointer-events", "none")
+            }
+        })
 
-        var wrapText = (text, lineHeight, width) => {
+        var wrapText = (text: Selection<SVGTextElement, any, null, undefined>, lineHeight: number, width: number) => {
             text.each(function () {
                 var text = select(this)
                 var y = text.attr("y")
@@ -2173,12 +2255,50 @@ export class Topology extends React.Component<Props, {}> {
             .attr("class", "node-name")
             .attr("dy", ".35em")
             .attr("y", 85)
+            // NOTE(safchain) maybe this should be done for all the nodes
+            // has the name can be updated
             .text((d: D3Node) => this.props.nodeAttrs(d.data.wrapped).name)
+            .attr("pointer-events", "none")
             .call(wrapText, 1.1, this.nodeWidth - 10)
+
+        const renderNodeBadge = function (d: D3Node) {
+            var badge = select(this).selectAll("g.node-badge")
+                .data(self.props.nodeAttrs(d.data.wrapped).badges)
+
+            var badgeEnter = badge.enter()
+                .append("g")
+                .attr("class", "node-badge")
+            badge.exit().remove()
+
+            badgeEnter
+                .append("rect")
+                .attr("x", (d: string, i: number) => 38 - i * 28)
+                .attr("y", -60)
+                .attr("width", 24)
+                .attr("height", 24)
+                .attr("rx", 5)
+                .attr("ry", 5)
+
+            badgeEnter
+                .append("text")
+                .attr("dx", (d: string, i: number) => 50 - i * 28)
+                .attr("dy", -42)
+                .text(d => d)
+                .attr("pointer-events", "none")
+        }
+
+        nodeEnter
+            .append("g")
+            .attr("class", "node-badges")
+            .attr("pointer-events", "none")
+            .each(renderNodeBadge)
+
+        node.each(renderNodeBadge)
 
         var exco = nodeEnter
             .filter((d: D3Node) => d.data.wrapped.children.length > 0)
             .append("g")
+            .attr("pointer-events", "none")
 
         exco.append("circle")
             .attr("class", "node-exco-circle")
@@ -2240,9 +2360,18 @@ export class Topology extends React.Component<Props, {}> {
             var y = source.y + d.source.dy
 
             if (Math.abs(x1 - x2) > this.nodeWidth) {
+                if (x1 > x2) {
+                    let t = x1
+                    x1 = x2
+                    x2 = t
+                }
+
+                let len = x2 - x1
+
                 var points = [
                     { x: x1, y: y + 10 },
-                    { x: (x1 + x2) / 2, y: y + 40 },
+                    { x: x1 + len / 4, y: y + 40 + 0.05 * len },
+                    { x: x2 - len / 4, y: y + 40 + 0.05 * len },
                     { x: x2, y: y + 10 }
                 ]
             } else {
@@ -2255,12 +2384,12 @@ export class Topology extends React.Component<Props, {}> {
             const liner = line()
                 .x(d => d.x)
                 .y(d => d.y)
-                .curve(curveCatmullRom.alpha(0.5))
+                .curve(curveCatmullRom.alpha(0.01))
 
             return liner(points)
         }
 
-        var wrapperLink = (d, margin) => {
+        var wrapperLink = (d: Link, margin: number) => {
             var dSource = this.d3nodes.get(d.source.id)
             var dTarget = this.d3nodes.get(d.target.id)
 

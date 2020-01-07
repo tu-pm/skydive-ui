@@ -18,7 +18,7 @@
 import * as React from 'react'
 import clsx from 'clsx'
 import Websocket from 'react-websocket'
-import { debounce } from 'ts-debounce'
+import { debounce } from 'throttle-debounce'
 
 import { withStyles } from '@material-ui/core/styles'
 import CssBaseline from '@material-ui/core/CssBaseline'
@@ -48,24 +48,34 @@ import { withRouter } from 'react-router-dom'
 import Badge from '@material-ui/core/Badge'
 import LocationOnIcon from '@material-ui/icons/LocationOn'
 import SettingsIcon from '@material-ui/icons/Settings'
+import ShoppingCartIcon from '@material-ui/icons/ShoppingCart'
+import Button from '@material-ui/core/Button'
 
 import { styles } from './AppStyles'
 import { Topology, Node, NodeAttrs, LinkAttrs, LinkTagState, Link } from './Topology'
 import { mainListItems, helpListItems } from './Menu'
 import AutoCompleteInput from './AutoComplete'
-import { AppState, selectElement, unselectElement, bumpRevision, session, closeSession } from './Store'
+import { AppState, selectElement, unselectElement, bumpRevision, session, closeSession, setConfig } from './Store'
 import SelectionPanel from './SelectionPanel'
 import DefaultConfig from './Config'
 import IpPathTracing from './IpPathTracing'
 
 import './App.css'
 import { ListItem, ListItemIcon, ListItemText } from '@material-ui/core'
+import { Configuration } from './api/configuration'
+import * as api from './api/api'
 
 const queryString = require('query-string')
+const fetchJsonp = require('fetch-jsonp')
 
-// merge default config and the one from assets
-declare var config: typeof DefaultConfig
-config = { ...DefaultConfig, ...config }
+// expose app ouside
+declare global {
+  interface Window {
+    API: any,
+    App: any
+  }
+}
+window.API = api
 
 interface Props extends WithSnackbarProps {
   classes: any
@@ -76,6 +86,12 @@ interface Props extends WithSnackbarProps {
   session: session
   closeSession: typeof closeSession
   history: any
+  config: typeof DefaultConfig
+  setConfig: typeof setConfig
+}
+
+export interface WSContext {
+  GremlinFilter: string | null
 }
 
 interface State {
@@ -88,6 +104,7 @@ interface State {
   suggestions: Array<string>
   anchorEl: Map<string, null | HTMLElement>
   isSelectionOpen: boolean
+  wsContext: WSContext
 }
 
 class App extends React.Component<Props, State> {
@@ -100,6 +117,11 @@ class App extends React.Component<Props, State> {
   bumpRevision: typeof bumpRevision
   checkAuthID: number
   staticDataURL: string
+  apiConf: Configuration
+  wsContext: WSContext
+  extraConfigURL: string
+  connected: boolean
+  debSetState: (state: any) => void
 
   constructor(props) {
     super(props)
@@ -113,40 +135,47 @@ class App extends React.Component<Props, State> {
       linkTagStates: new Map<string, LinkTagState>(),
       suggestions: new Array<string>(),
       anchorEl: new Map<string, null | HTMLElement>(),
-      isSelectionOpen: false
+      isSelectionOpen: false,
+      wsContext: { GremlinFilter: null }
     }
 
     this.synced = false
 
-    this.refreshTopology = debounce(this._refreshTopology.bind(this), 300)
+    this.refreshTopology = debounce(300, this._refreshTopology.bind(this))
 
     // we will refresh info each 1s
-    this.bumpRevision = debounce(this.props.bumpRevision.bind(this), 1000)
+    this.bumpRevision = debounce(1000, this.props.bumpRevision.bind(this))
+
+    // debounce version of setState
+    this.debSetState = debounce(200, this.setState.bind(this))
 
     const parsed = queryString.parse(props.location.search)
+
+    // parse static topology data
     if (parsed.data) {
       this.staticDataURL = parsed.data
+    } else {
+      this.staticDataURL = ""
+    }
+
+    // parse extra config
+    if (parsed.config) {
+      this.extraConfigURL = parsed.config
+    } else {
+      this.extraConfigURL = ""
     }
   }
 
   componentDidMount() {
-    this.checkAuthID = window.setInterval(() => {
-      this.checkAuth()
-    }, 2000)
+    // make the application available globally
+    window.App = this
 
-    if (this.staticDataURL) {
-      fetch(this.staticDataURL).then(resp => {
-        if (resp.status === 200) {
-          return resp.json().then(data => {
-            if (!Array.isArray(data)) {
-              throw "topology schema error"
-            }
-            this.parseTopology(data[0])
-          })
-        } else {
-          this.notify("Unable to load or parse topology data", "error")
-        }
-      })
+    this.loadExtraConfig(this.extraConfigURL)
+
+    if (!this.staticDataURL) {
+      this.checkAuthID = window.setInterval(() => {
+        this.checkAuth()
+      }, 2000)
     }
   }
 
@@ -156,26 +185,104 @@ class App extends React.Component<Props, State> {
     }
   }
 
-  highlightPath(src: string, dest: string) {
-
+  loadStaticData(url: string) {
+    fetch(url).then(resp => {
+      resp.json().then(data => {
+        if (!Array.isArray(data)) {
+          throw "topology schema error"
+        }
+        this.parseTopology(data[0])
+      }).catch(() => {
+        this.notify("Unable to load or parse topology data", "error")
+      })
+    })
   }
 
-  fillSuggestions(node: Node, suggestions: Array<string>) {
-    for (let key of config.suggestions) {
+  private fetchExtraConfig(url: string): Promise<typeof DefaultConfig> {
+    var promise = new Promise<typeof DefaultConfig>((resolve, reject) => {
+      if (!url) {
+        resolve(this.props.config)
+        return
+      }
+
+      fetch(url).then(resp => {
+        resp.text().then(data => {
+          try {
+            var config = eval(data)
+
+            config = { ...this.props.config, ...config }
+            this.props.setConfig(config)
+
+            resolve(config)
+          } catch (e) {
+            reject(e)
+          }
+        })
+      }).catch((reason) => {
+        throw Error(reason)
+      })
+    })
+
+    return promise
+  }
+
+  loadExtraConfig(url: string) {
+    this.extraConfigURL = url
+
+    if (this.staticDataURL) {
+      // load first the config and then the data
+      var p = this.fetchExtraConfig(this.extraConfigURL).then(() => {
+        this.loadStaticData(this.staticDataURL)
+      })
+    } else {
+      var p = this.fetchExtraConfig(this.extraConfigURL).then(() => {
+        this.updateFilter()
+        this.sync()
+      })
+    }
+
+    p.catch(() => {
+      this.notify("Unable to load or parse extra config", "error")
+    })
+  }
+
+  private updateFilter(): boolean {
+    for (let filter of this.props.config.filters) {
+      if (filter.id === this.props.config.defaultFilter) {
+        if (this.state.wsContext.GremlinFilter !== filter.gremlin) {
+          this.setState({ wsContext: { GremlinFilter: filter.gremlin } })
+          return true
+        }
+      }
+    }
+
+    return false
+  }
+
+  private updateSuggestions(node: Node, suggestions: Array<string>) {
+    var updated: boolean = false
+
+    for (let key of this.props.config.suggestions) {
       try {
         var value = eval("node." + key)
         if (Array.isArray(value)) {
           for (let v of value) {
             if (!suggestions.includes(v)) {
               suggestions.push(v)
+              updated = true
             }
           }
         } else if (typeof value === "string") {
           if (!suggestions.includes(value)) {
             suggestions.push(value)
+            updated = true
           }
         }
       } catch (e) { }
+    }
+
+    if (updated) {
+      this.debSetState({ suggestions: this.state.suggestions })
     }
   }
 
@@ -189,13 +296,12 @@ class App extends React.Component<Props, State> {
       return false
     }
 
-    var tags = config.nodeTags(node.Metadata)
+    var tags = this.props.config.nodeTags(node.Metadata)
 
-    let n = this.tc.addNode(node.ID, tags, node.Metadata, (n: Node): number => config.nodeAttrs(n).weight)
+    let n = this.tc.addNode(node.ID, tags, node.Metadata, (n: Node): number => this.props.config.nodeAttrs(n).weight)
     this.tc.setParent(n, this.tc.root)
 
-    this.fillSuggestions(n, this.state.suggestions)
-    this.setState({ suggestions: this.state.suggestions })
+    this.updateSuggestions(n, this.state.suggestions)
 
     return true
   }
@@ -305,15 +411,15 @@ class App extends React.Component<Props, State> {
       }
     }
 
-    this.tc.activeNodeTag(config.defaultNodeTag)
+    this.tc.activeNodeTag(this.props.config.defaultNodeTag)
 
-    this.setState({ nodeTagStates: this.tc.nodeTagStates, linkTagStates: this.tc.linkTagStates })
+    this.setState({ nodeTagStates: this.tc.nodeTagStates })
 
     this.tc.zoomFit()
   }
 
   nodeAttrs(node: Node): NodeAttrs {
-    var attrs = config.nodeAttrs(node)
+    var attrs = this.props.config.nodeAttrs(node)
     if (node.data.State) {
       attrs.classes.push(node.data.State.toLowerCase())
     }
@@ -322,7 +428,7 @@ class App extends React.Component<Props, State> {
   }
 
   linkAttrs(link: Link): LinkAttrs {
-    return config.linkAttrs(link)
+    return this.props.config.linkAttrs(link)
   }
 
   onNodeSelected(node: Node, active: boolean) {
@@ -348,20 +454,20 @@ class App extends React.Component<Props, State> {
 
   weightTitles(): Map<number, string> {
     var map = new Map<number, string>()
-    Object.keys(config.weightTitles).forEach(key => {
+    var titles = this.props.config.weightTitles()
+    Object.keys(titles).forEach(key => {
       var index = parseInt(key)
-      map.set(index, config.weightTitles[index]);
+      map.set(index, titles[index]);
     })
     return map
   }
 
-  sortNodesFnc(a, b) {
-
-    return a.data.Name.localeCompare(b.wrapped.data.Name)
+  sortNodesFnc(a: Node, b: Node) {
+    return this.props.config.nodeSortFnc(a, b)
   }
 
   onShowNodeContextMenu(node: Node) {
-    return config.nodeMenu(node)
+    return this.props.config.nodeMenu(node)
   }
 
   _refreshTopology() {
@@ -437,6 +543,8 @@ class App extends React.Component<Props, State> {
   }
 
   onWebSocketClose() {
+    this.connected = false
+
     if (this.synced) {
       this.notify("Disconnected", "error")
     } else {
@@ -449,7 +557,7 @@ class App extends React.Component<Props, State> {
     this.checkAuth()
   }
 
-  checkAuth() {
+  async checkAuth(): Promise<void> {
     const requestOptions = {
       method: 'GET',
       headers: {
@@ -466,24 +574,53 @@ class App extends React.Component<Props, State> {
       })
   }
 
-  sendMessage(data) {
-    this.websocket.sendMessage(JSON.stringify(data))
+  sendMessage(data: any) {
+    if (this.websocket) {
+      this.websocket.sendMessage(JSON.stringify(data))
+    }
+  }
+
+  setWSContext(context: WSContext) {
+    this.setState({ wsContext: context })
+    this.sync()
+  }
+
+  setGremlinFilter(gremlin: string) {
+    this.state.wsContext.GremlinFilter = gremlin
+    this.setWSContext(this.state.wsContext)
   }
 
   sync() {
-    var msg = { "Namespace": "Graph", "Type": "SyncRequest", "Obj": null }
+    if (!this.tc || !this.connected) {
+      return
+    }
+
+    // then reset the topology view and re-sync
+    this.tc.resetTree()
+    var msg = { "Namespace": "Graph", "Type": "SyncRequest", "Obj": this.state.wsContext }
     this.sendMessage(msg)
   }
 
   onWebSocketOpen() {
+    this.connected = true
+
     if (!this.tc) {
       return
     }
 
     this.notify("Connected", "info")
-    this.tc.resetTree()
-    this.sync()
-    this.notify("Synchronized", "info")
+    this.fetchExtraConfig(this.extraConfigURL).then(() => {
+      this.updateFilter()
+
+      this.sync()
+
+      this.notify("Synchronized", "info")
+    }).catch((reason) => {
+      this.notify("Unable to load or parse extra config", "error")
+    })
+
+    // set API configuration
+    this.apiConf = new Configuration({ accessToken: this.props.session.token })
   }
 
   notify(msg, variant) {
@@ -505,7 +642,7 @@ class App extends React.Component<Props, State> {
     this.setState({ isNavOpen: false })
   }
 
-  onLayerLinkStateChange(event) {
+  onLinkTagStateChange(event) {
     if (!this.tc) {
       return
     }
@@ -521,8 +658,10 @@ class App extends React.Component<Props, State> {
         this.tc.setLinkTagState(event.target.value, LinkTagState.Hidden)
         break
     }
+  }
 
-    this.setState({ linkTagStates: this.tc.linkTagStates })
+  onLinkTagChange(tags: Map<string, LinkTagState>) {
+    this.setState({ linkTagStates: tags })
   }
 
   onSearchChange(selected: Array<string>) {
@@ -644,6 +783,9 @@ class App extends React.Component<Props, State> {
             <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
               Skydive
             </Typography>
+            {this.props.config.subTitle &&
+              <Typography className={classes.subTitle} variant="caption">{this.props.config.subTitle}</Typography>
+            }
             <div className={classes.search}>
               <AutoCompleteInput placeholder="metadata value" suggestions={this.state.suggestions} onChange={this.onSearchChange.bind(this)} />
             </div>
@@ -728,10 +870,21 @@ class App extends React.Component<Props, State> {
         <main className={classes.content}>
           <div className={classes.appBarSpacer} />
           <Container maxWidth="xl" className={classes.container}>
-            <Topology className={classes.topology} ref={node => this.tc = node} nodeAttrs={this.nodeAttrs} linkAttrs={this.linkAttrs}
+            <Topology className={classes.topology} ref={node => this.tc = node} nodeAttrs={this.nodeAttrs.bind(this)} linkAttrs={this.linkAttrs.bind(this)}
               onNodeSelected={this.onNodeSelected.bind(this)}
-              onShowNodeContextMenu={this.onShowNodeContextMenu.bind(this)} weightTitles={this.weightTitles()}
-              groupBy={config.groupBy} onClick={this.onTopologyClick.bind(this)} onLinkSelected={this.onLinkSelected.bind(this)} />
+              sortNodesFnc={this.sortNodesFnc.bind(this)}
+              onShowNodeContextMenu={this.onShowNodeContextMenu.bind(this)}
+              weightTitles={this.weightTitles()}
+              groupSize={this.props.config.groupSize}
+              groupType={this.props.config.groupType.bind(this.props.config)}
+              groupName={this.props.config.groupName.bind(this.props.config)}
+              onClick={this.onTopologyClick.bind(this)}
+              onLinkSelected={this.onLinkSelected.bind(this)}
+              onLinkTagChange={this.onLinkTagChange.bind(this)}
+              onNodeClicked={this.props.config.nodeClicked.bind(this.props.config)}
+              onNodeDblClicked={this.props.config.nodeDblClicked.bind(this.props.config)}
+              defaultLinkTagMode={this.props.config.defaultLinkTagMode.bind(this.props.config)}
+            />
           </Container>
           <Container className={classes.rightPanel}>
             <Paper className={clsx(classes.rightPanelPaper, (!this.props.selection.length || !this.state.isSelectionOpen) && classes.rightPanelPaperClose)}
@@ -740,7 +893,14 @@ class App extends React.Component<Props, State> {
             </Paper>
           </Container>
           <Container className={classes.nodeTagsPanel}>
-            {Array.from(this.state.nodeTagStates.keys()).map((tag) => (
+            {Array.from(this.state.nodeTagStates.keys()).sort((a, b) => {
+              if (a === this.props.config.defaultNodeTag) {
+                return -1
+              } else if (b === this.props.config.defaultNodeTag) {
+                return 1
+              }
+              return 0
+            }).map((tag) => (
               <Fab key={tag} variant="extended" aria-label="delete" size="small"
                 color={this.state.nodeTagStates.get(tag) ? "primary" : "default"}
                 className={classes.nodeTagsFab}
@@ -749,33 +909,47 @@ class App extends React.Component<Props, State> {
               </Fab>
             ))}
           </Container>
-          <Container className={classes.linkTagsPanel}>
-            <Grid container spacing={2}>
-              <Grid item xs={5}>
-                <Paper className={classes.linkTagsPanelPaper}>
-                  <Typography component="h6" color="primary" gutterBottom>
-                    Link types
+          {this.staticDataURL === "" &&
+            <Container className={classes.filtersPanel}>
+              {this.props.config.filters.map((filter, i) => (
+                <Button variant="contained" key={i} aria-label="delete" size="small"
+                  color={this.state.wsContext.GremlinFilter === filter.gremlin ? "primary" : "default"}
+                  className={classes.filtersFab}
+                  onClick={() => { this.setGremlinFilter(filter.gremlin) }}>
+                  {filter.label}
+                </Button>
+              ))}
+            </Container>
+          }
+          {this.state.linkTagStates.size !== 0 &&
+            <Container className={classes.linkTagsPanel}>
+              <Grid container spacing={2}>
+                <Grid item xs={5}>
+                  <Paper className={classes.linkTagsPanelPaper}>
+                    <Typography component="h6" color="primary" gutterBottom>
+                      Link types
                   </Typography>
-                  <FormGroup>
-                    {Array.from(this.state.linkTagStates.keys()).map((key) => (
-                      <FormControlLabel key={key} control={
-                        <Checkbox value={key} color="primary" onChange={this.onLayerLinkStateChange.bind(this)}
-                          checked={this.state.linkTagStates.get(key) === LinkTagState.Visible}
-                          indeterminate={this.state.linkTagStates.get(key) === LinkTagState.EventBased} />
-                      }
-                        label={key} />
-                    ))}
-                  </FormGroup>
-                </Paper>
+                    <FormGroup>
+                      {Array.from(this.state.linkTagStates.keys()).map((key) => (
+                        <FormControlLabel key={key} control={
+                          <Checkbox value={key} color="primary" onChange={this.onLinkTagStateChange.bind(this)}
+                            checked={this.state.linkTagStates.get(key) === LinkTagState.Visible}
+                            indeterminate={this.state.linkTagStates.get(key) === LinkTagState.EventBased} />
+                        }
+                          label={key} />
+                      ))}
+                    </FormGroup>
+                  </Paper>
+                </Grid>
+                <Grid item xs={7}>
+                  {this.tc && <IpPathTracing
+                    tracePath={this.tc.tracePath.bind(this.tc)}
+                    clearPath={this.tc.clearHighlightedPath.bind(this.tc)}
+                  />}
+                </Grid>
               </Grid>
-              <Grid item xs={7}>
-                {this.tc && <IpPathTracing
-                  tracePath={this.tc.tracePath.bind(this.tc)}
-                  clearPath={this.tc.clearHighlightedPath.bind(this.tc)}
-                />}
-              </Grid>
-            </Grid>
-          </Container>
+            </Container>
+          }
         </main>
       </div>
     )
@@ -784,14 +958,16 @@ class App extends React.Component<Props, State> {
 
 export const mapStateToProps = (state: AppState) => ({
   selection: state.selection,
-  session: state.session
+  session: state.session,
+  config: state.config
 })
 
 export const mapDispatchToProps = ({
   selectElement,
   unselectElement,
   bumpRevision,
-  closeSession
+  closeSession,
+  setConfig
 })
 
 export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(withSnackbar(withRouter(App))))

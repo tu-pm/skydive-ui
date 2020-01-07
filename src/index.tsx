@@ -24,10 +24,13 @@ import '@fortawesome/fontawesome-free/css/all.css'
 import { Provider, connect } from 'react-redux'
 import { createBrowserHistory } from 'history'
 import { AppState, store } from './Store'
-import { Router, Route, Redirect, Switch } from 'react-router-dom'
+import { BrowserRouter, Route, Redirect, Switch } from 'react-router-dom'
 import Login from './Login'
 import App from './App'
 import Tools from './Tools'
+
+// from options
+declare var baseurl: string
 
 // expose some tools
 declare global {
@@ -57,13 +60,13 @@ const TopoRoute = connect(mapStateToProps, mapDispatchToProps)(({ component, ses
 ReactDOM.render(
   <Provider store={store}>
     <SnackbarProvider>
-      <Router history={history}>
+      <BrowserRouter history={history} basename={baseurl || ""}>
         <Switch>
           <TopoRoute path="/" component={App} exact />
           <Route path="/login" component={Login} />
-          <Redirect from="*" to="/" />
+          <Redirect from="*" to={(baseurl || "/") + history.location.search} />
         </Switch>
-      </Router>,
+      </BrowserRouter>
     </SnackbarProvider>
   </Provider>,
   document.getElementById('index')

@@ -59,7 +59,7 @@ class Login extends React.Component<Props, State> {
         super(props)
 
         this.state = {
-            endpoint: "",
+            endpoint: this.props.session.endpoint,
             username: "",
             password: "",
             submitted: false,

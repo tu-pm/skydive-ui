@@ -19,17 +19,20 @@ import * as React from 'react'
 import TextField from '@material-ui/core/TextField'
 import Button from '@material-ui/core/Button'
 import { withStyles } from '@material-ui/core/styles'
-import AlbumIcon from '@material-ui/icons/Album'
+import VideocamIcon from '@material-ui/icons/Videocam'
 
 import { Configuration } from './api/configuration'
 import ActionPanel from './ActionPanel'
 import { CapturesApi } from './api'
 import { styles } from './CaptureFormStyles'
+import { AppState, session } from './Store'
+import { connect } from 'react-redux'
 
 interface Props {
     classes: any
     defaultName: string
     gremlinExpr: string
+    session: session
 }
 
 interface State {
@@ -53,10 +56,10 @@ class CaptureForm extends React.Component<Props, State> {
     }
 
     onClick() {
-        var conf = new Configuration({ username: "admin", password: "password" })
+        var conf = new Configuration({ accessToken: this.props.session.token })
         var api = new CapturesApi(conf)
 
-        api.createCapture({GremlinQuery: this.props.gremlinExpr}).then(result => {
+        api.createCapture({ GremlinQuery: this.props.gremlinExpr }).then(result => {
             console.log(result)
         })
     }
@@ -65,7 +68,7 @@ class CaptureForm extends React.Component<Props, State> {
         const { classes } = this.props
 
         return (
-            <ActionPanel icon={<AlbumIcon />} title="Packet capture" content={
+            <ActionPanel icon={<VideocamIcon />} title="Packet capture" content={
                 <React.Fragment>
                     <TextField
                         id="standard-basic"
@@ -99,4 +102,11 @@ class CaptureForm extends React.Component<Props, State> {
     }
 }
 
-export default withStyles(styles)(CaptureForm)
+export const mapStateToProps = (state: AppState) => ({
+    session: state.session
+})
+
+export const mapDispatchToProps = ({
+})
+
+export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(CaptureForm))

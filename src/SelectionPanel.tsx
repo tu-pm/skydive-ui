@@ -26,7 +26,7 @@ import Collapse from '@material-ui/core/Collapse'
 import Highlight from 'react-highlight'
 import CancelIcon from '@material-ui/icons/Cancel'
 import Tooltip from '@material-ui/core/Tooltip'
-import AlbumIcon from '@material-ui/icons/Album'
+import VideocamIcon from '@material-ui/icons/Videocam'
 import CaptureForm from "./CaptureForm"
 import { withStyles } from '@material-ui/core/styles'
 
@@ -37,7 +37,7 @@ import { AppState } from './Store'
 import { styles } from './SelectionPanelStyles'
 import ActionPanel from './ActionPanel'
 
-declare var config: any
+import DefaultConfig from './Config'
 
 interface Props {
   classes: any
@@ -45,6 +45,7 @@ interface Props {
   revision: number
   onLocation?: (node: Node | Link) => void
   onClose?: (node: Node | Link) => void
+  config: typeof DefaultConfig
 }
 
 interface State {
@@ -85,25 +86,31 @@ class SelectionPanel extends React.Component<Props, State> {
       var className = classes.tabIconFree
 
       if (el.type === 'node') {
-        if (config.nodeAttrs(el).iconClass === "font-brands") {
+        let attrs = this.props.config.nodeAttrs(el)
+        var icon: string = attrs.icon
+        var href: string = attrs.href
+
+        if (attrs.iconClass === "font-brands") {
           className = classes.tabIconBrands
         }
 
-        var icon = config.nodeAttrs(el).icon
-        var title = config.nodeTabTitle(el)
+        var title = this.props.config.nodeTabTitle(el)
       } else {
-        if (config.linkAttrs(el).iconClass === "font-brands") {
+        let attrs = this.props.config.linkAttrs(el)
+        var icon: string = attrs.icon
+        var href: string = attrs.href
+
+        if (attrs.iconClass === "font-brands") {
           className = classes.tabIconBrands
         }
 
-        var icon = config.linkAttrs(el).icon
-        var title = config.linkTabTitle(el)
+        var title = this.props.config.linkTabTitle(el)
       }
 
       const iconRender = () => {
-        if (icon.startsWith("/") || icon.startsWith("http") || icon.startsWith("data:")) {
+        if (href) {
           return (
-            <img src={icon} className={classes.iconImg} />
+            <img src={href} className={classes.iconImg} />
           )
         }
         return icon
@@ -134,17 +141,17 @@ class SelectionPanel extends React.Component<Props, State> {
 
   private dataFields(el: Node | Link): Array<any> {
     if (el.type === 'node') {
-      return config.nodeDataFields
+      return this.props.config.nodeDataFields
     } else {
-      return config.linkDataFields
+      return this.props.config.linkDataFields
     }
   }
 
   private dataAttrs(el: Node | Link): any {
     if (el.type === 'node') {
-      return config.nodeAttrs(el)
+      return this.props.config.nodeAttrs(el)
     } else {
-      return config.linkAttrs(el)
+      return this.props.config.linkAttrs(el)
     }
   }
 
@@ -196,7 +203,7 @@ class SelectionPanel extends React.Component<Props, State> {
                   aria-label="Packet capture"
                   onClick={() => this.toggleCaptureForm(el)}
                   color="inherit">
-                  <AlbumIcon />
+                  <VideocamIcon />
                 </IconButton>
               </Tooltip>
             }
@@ -220,7 +227,10 @@ class SelectionPanel extends React.Component<Props, State> {
 
               if (entry.field) {
                 data = dataByPath(el.data, entry.field)
+              } else if (entry.data) {
+                data = entry.data(el)
               }
+
               exclude = this.dataFields(el).filter(cfg => cfg.field).map(cfg => {
                 if (entry.field) {
                   return cfg.field.replace(entry.field + ".", "")
@@ -234,8 +244,9 @@ class SelectionPanel extends React.Component<Props, State> {
                 var sortKeys = entry.sortKeys ? entry.sortKeys(data) : null
                 var filterKeys = entry.filterKeys ? entry.filterKeys(data) : null
 
+                var suffix = title.toLowerCase().replace(" ", "-")
                 return (
-                  <DataPanel key={"dataviewer-" + (entry.field || "general") + "-" + el.id} title={title}
+                  <DataPanel key={"dataviewer-" + el.id + "-" + suffix} title={title}
                     defaultExpanded={entry.expanded} data={data} exclude={exclude} sortKeys={sortKeys} filterKeys={filterKeys}
                     normalizer={entry.normalizer} graph={entry.graph} icon={entry.icon} iconClass={entry.iconClass} />
                 )
@@ -276,7 +287,8 @@ class SelectionPanel extends React.Component<Props, State> {
 
 export const mapStateToProps = (state: AppState) => ({
   selection: state.selection,
-  revision: state.selectionRevision
+  revision: state.selectionRevision,
+  config: state.config
 })
 
 export const mapDispatchToProps = ({
