@@ -14,7 +14,6 @@
 
 
 import * as url from "url";
-url.URLSearchParams = URLSearchParams;
 
 import * as portableFetch from "portable-fetch";
 import { Configuration } from "./configuration";
@@ -42,7 +41,7 @@ export interface FetchAPI {
 }
 
 /**
- *  
+ *
  * @export
  * @interface FetchArgs
  */
@@ -52,7 +51,7 @@ export interface FetchArgs {
 }
 
 /**
- * 
+ *
  * @export
  * @class BaseAPI
  */
@@ -68,7 +67,7 @@ export class BaseAPI {
 };
 
 /**
- * 
+ *
  * @export
  * @class RequiredError
  * @extends {Error}
@@ -87,25 +86,25 @@ export class RequiredError extends Error {
  */
 export interface AgentStatus {
     /**
-     * 
+     *
      * @type {{ [key: string]: ConnStatus; }}
      * @memberof AgentStatus
      */
     Analyzers?: { [key: string]: ConnStatus; };
     /**
-     * 
+     *
      * @type {{ [key: string]: ConnStatus; }}
      * @memberof AgentStatus
      */
     Clients?: { [key: string]: ConnStatus; };
     /**
-     * 
+     *
      * @type {Array<string>}
      * @memberof AgentStatus
      */
     FlowProbes?: Array<string>;
     /**
-     * 
+     *
      * @type {{ [key: string]: any; }}
      * @memberof AgentStatus
      */
@@ -113,7 +112,7 @@ export interface AgentStatus {
 }
 
 /**
- * Alerts provide a way to be notified when a Gremlin expression is evaluated to true.  
+ * Alerts provide a way to be notified when a Gremlin expression is evaluated to true.
  * @export
  * @interface Alert
  */
@@ -125,7 +124,7 @@ export interface Alert {
      */
     Action?: string;
     /**
-     * 
+     *
      * @type {Date}
      * @memberof Alert
      */
@@ -173,43 +172,43 @@ export interface Alerts {
  */
 export interface AnalyzerStatus {
     /**
-     * 
+     *
      * @type {{ [key: string]: ConnStatus; }}
      * @memberof AnalyzerStatus
      */
     Agents?: { [key: string]: ConnStatus; };
     /**
-     * 
+     *
      * @type {ElectionStatus}
      * @memberof AnalyzerStatus
      */
     Alerts?: ElectionStatus;
     /**
-     * 
+     *
      * @type {ElectionStatus}
      * @memberof AnalyzerStatus
      */
     Captures?: ElectionStatus;
     /**
-     * 
+     *
      * @type {PeersStatus}
      * @memberof AnalyzerStatus
      */
     Peers?: PeersStatus;
     /**
-     * 
+     *
      * @type {{ [key: string]: any; }}
      * @memberof AnalyzerStatus
      */
     Probes?: { [key: string]: any; };
     /**
-     * 
+     *
      * @type {{ [key: string]: ConnStatus; }}
      * @memberof AnalyzerStatus
      */
     Publishers?: { [key: string]: ConnStatus; };
     /**
-     * 
+     *
      * @type {{ [key: string]: ConnStatus; }}
      * @memberof AnalyzerStatus
      */
@@ -217,7 +216,7 @@ export interface AnalyzerStatus {
 }
 
 /**
- * 
+ *
  * @export
  * @interface AnyValue
  */
@@ -245,7 +244,7 @@ export interface AuthenticateOKBody {
 }
 
 /**
- * BasicResource is a resource with a unique identifier 
+ * BasicResource is a resource with a unique identifier
  * @export
  * @interface BasicResource
  */
@@ -253,7 +252,7 @@ export interface BasicResource {
 }
 
 /**
- * Captures provide a way to capture network traffic on the nodes matching a Gremlin expression.  
+ * Captures provide a way to capture network traffic on the nodes matching a Gremlin expression.
  * @export
  * @interface Capture
  */
@@ -271,7 +270,7 @@ export interface Capture {
      */
     Description?: string;
     /**
-     * 
+     *
      * @type {ExtraLayers}
      * @memberof Capture
      */
@@ -373,7 +372,7 @@ export interface Captures {
 }
 
 /**
- * 
+ *
  * @export
  * @interface ConnState
  */
@@ -387,49 +386,49 @@ export interface ConnState {
  */
 export interface ConnStatus {
     /**
-     * 
+     *
      * @type {string}
      * @memberof ConnStatus
      */
     Addr?: string;
     /**
-     * 
+     *
      * @type {Protocol}
      * @memberof ConnStatus
      */
     ClientProtocol?: Protocol;
     /**
-     * 
+     *
      * @type {Date}
      * @memberof ConnStatus
      */
     ConnectTime?: Date;
     /**
-     * 
+     *
      * @type {ConnState}
      * @memberof ConnStatus
      */
     IsConnected?: ConnState;
     /**
-     * 
+     *
      * @type {number}
      * @memberof ConnStatus
      */
     Port?: number;
     /**
-     * 
+     *
      * @type {string}
      * @memberof ConnStatus
      */
     RemoteHost?: string;
     /**
-     * 
+     *
      * @type {ServiceType}
      * @memberof ConnStatus
      */
     RemoteServiceType?: ServiceType;
     /**
-     * 
+     *
      * @type {ServiceType}
      * @memberof ConnStatus
      */
@@ -485,7 +484,7 @@ export interface ContainerWaitOKBody {
 }
 
 /**
- * Edge rules allow the dynamic creation of links between nodes of the graph.  
+ * Edge rules allow the dynamic creation of links between nodes of the graph.
  * @export
  * @interface EdgeRule
  */
@@ -503,7 +502,7 @@ export interface EdgeRule {
      */
     Dst?: string;
     /**
-     * 
+     *
      * @type {Metadata}
      * @memberof EdgeRule
      */
@@ -539,7 +538,7 @@ export interface EdgeRules {
  */
 export interface ElectionStatus {
     /**
-     * 
+     *
      * @type {boolean}
      * @memberof ElectionStatus
      */
@@ -547,7 +546,7 @@ export interface ElectionStatus {
 }
 
 /**
- * 
+ *
  * @export
  * @interface ErrorResponse
  */
@@ -677,7 +676,7 @@ export interface Info {
 }
 
 /**
- * Metadata describes the graph node metadata type. It implements ElementMatcher based only on Metadata. 
+ * Metadata describes the graph node metadata type. It implements ElementMatcher based only on Metadata.
  * @export
  * @interface Metadata
  */
@@ -687,7 +686,7 @@ export interface Metadata {
 }
 
 /**
- * Node rules allow the dynamic creation of nodes in the graph.  
+ * Node rules allow the dynamic creation of nodes in the graph.
  * @export
  * @interface NodeRule
  */
@@ -705,7 +704,7 @@ export interface NodeRule {
      */
     Description?: string;
     /**
-     * 
+     *
      * @type {Metadata}
      * @memberof NodeRule
      */
@@ -735,115 +734,115 @@ export interface NodeRules {
 }
 
 /**
- * PacketInjection packet injector API parameters 
+ * PacketInjection packet injector API parameters
  * @export
  * @interface PacketInjection
  */
 export interface PacketInjection {
     /**
-     * 
+     *
      * @type {number}
      * @memberof PacketInjection
      */
     Count?: number;
     /**
-     * 
+     *
      * @type {string}
      * @memberof PacketInjection
      */
     Dst?: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof PacketInjection
      */
     DstIP?: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof PacketInjection
      */
     DstMAC?: string;
     /**
-     * 
+     *
      * @type {number}
      * @memberof PacketInjection
      */
     DstPort?: number;
     /**
-     * 
+     *
      * @type {number}
      * @memberof PacketInjection
      */
     ICMPID?: number;
     /**
-     * 
+     *
      * @type {number}
      * @memberof PacketInjection
      */
     IncrementPayload?: number;
     /**
-     * 
+     *
      * @type {number}
      * @memberof PacketInjection
      */
     Interval?: number;
     /**
-     * 
+     *
      * @type {string}
      * @memberof PacketInjection
      */
     Mode?: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof PacketInjection
      */
     Payload?: string;
     /**
-     * 
+     *
      * @type {Array<number>}
      * @memberof PacketInjection
      */
     Pcap?: Array<number>;
     /**
-     * 
+     *
      * @type {string}
      * @memberof PacketInjection
      */
     Src?: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof PacketInjection
      */
     SrcIP?: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof PacketInjection
      */
     SrcMAC?: string;
     /**
-     * 
+     *
      * @type {number}
      * @memberof PacketInjection
      */
     SrcPort?: number;
     /**
-     * 
+     *
      * @type {Date}
      * @memberof PacketInjection
      */
     StartTime?: Date;
     /**
-     * 
+     *
      * @type {number}
      * @memberof PacketInjection
      */
     TTL?: number;
     /**
-     * 
+     *
      * @type {string}
      * @memberof PacketInjection
      */
@@ -867,13 +866,13 @@ export interface PacketInjections {
  */
 export interface PeersStatus {
     /**
-     * 
+     *
      * @type {{ [key: string]: ConnStatus; }}
      * @memberof PeersStatus
      */
     Incomers?: { [key: string]: ConnStatus; };
     /**
-     * 
+     *
      * @type {{ [key: string]: ConnStatus; }}
      * @memberof PeersStatus
      */
@@ -887,7 +886,7 @@ export interface PeersStatus {
  */
 export interface Plugin {
     /**
-     * 
+     *
      * @type {PluginConfig}
      * @memberof Plugin
      */
@@ -917,7 +916,7 @@ export interface Plugin {
      */
     PluginReference?: string;
     /**
-     * 
+     *
      * @type {PluginSettings}
      * @memberof Plugin
      */
@@ -925,13 +924,13 @@ export interface Plugin {
 }
 
 /**
- * 
+ *
  * @export
  * @interface PluginConfig
  */
 export interface PluginConfig {
     /**
-     * 
+     *
      * @type {PluginConfigArgs}
      * @memberof PluginConfig
      */
@@ -961,13 +960,13 @@ export interface PluginConfig {
      */
     Env: Array<PluginEnv>;
     /**
-     * 
+     *
      * @type {PluginConfigInterface}
      * @memberof PluginConfig
      */
     _Interface: PluginConfigInterface;
     /**
-     * 
+     *
      * @type {PluginConfigLinux}
      * @memberof PluginConfig
      */
@@ -979,7 +978,7 @@ export interface PluginConfig {
      */
     Mounts: Array<PluginMount>;
     /**
-     * 
+     *
      * @type {PluginConfigNetwork}
      * @memberof PluginConfig
      */
@@ -991,7 +990,7 @@ export interface PluginConfig {
      */
     PropagatedMount: string;
     /**
-     * 
+     *
      * @type {PluginConfigUser}
      * @memberof PluginConfig
      */
@@ -1003,7 +1002,7 @@ export interface PluginConfig {
      */
     WorkDir: string;
     /**
-     * 
+     *
      * @type {PluginConfigRootfs}
      * @memberof PluginConfig
      */
@@ -1283,7 +1282,7 @@ export interface PluginMount {
 }
 
 /**
- * 
+ *
  * @export
  * @interface PluginSettings
  */
@@ -1355,7 +1354,7 @@ export interface Protocol {
 }
 
 /**
- * 
+ *
  * @export
  * @interface ServiceState
  */
@@ -1385,13 +1384,13 @@ export interface ServiceUpdateResponse {
 }
 
 /**
- * TopologyParams topology query parameters 
+ * TopologyParams topology query parameters
  * @export
  * @interface TopologyParams
  */
 export interface TopologyParams {
     /**
-     * 
+     *
      * @type {string}
      * @memberof TopologyParams
      */
@@ -1447,7 +1446,7 @@ export interface Volume {
      */
     Status?: { [key: string]: any; };
     /**
-     * 
+     *
      * @type {VolumeUsageData}
      * @memberof Volume
      */
@@ -1527,7 +1526,7 @@ export interface VolumesListOKBody {
 }
 
 /**
- * Workflow allows to automate actions using JavaScript.  
+ * Workflow allows to automate actions using JavaScript.
  * @export
  * @interface Workflow
  */
@@ -1557,7 +1556,7 @@ export interface Workflow {
      */
     Parameters?: Array<WorkflowParam>;
     /**
-     * 
+     *
      * @type {string}
      * @memberof Workflow
      */
@@ -1577,7 +1576,7 @@ export interface Workflow {
  */
 export interface WorkflowCall {
     /**
-     * 
+     *
      * @type {Array<any>}
      * @memberof WorkflowCall
      */
@@ -1585,19 +1584,19 @@ export interface WorkflowCall {
 }
 
 /**
- * WorkflowChoice describes one value within a choice 
+ * WorkflowChoice describes one value within a choice
  * @export
  * @interface WorkflowChoice
  */
 export interface WorkflowChoice {
     /**
-     * 
+     *
      * @type {string}
      * @memberof WorkflowChoice
      */
     Description?: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof WorkflowChoice
      */
@@ -1605,37 +1604,37 @@ export interface WorkflowChoice {
 }
 
 /**
- * WorkflowParam describes a workflow parameter 
+ * WorkflowParam describes a workflow parameter
  * @export
  * @interface WorkflowParam
  */
 export interface WorkflowParam {
     /**
-     * 
+     *
      * @type {any}
      * @memberof WorkflowParam
      */
     _Default?: any;
     /**
-     * 
+     *
      * @type {string}
      * @memberof WorkflowParam
      */
     Description?: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof WorkflowParam
      */
     Name?: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof WorkflowParam
      */
     Type?: string;
     /**
-     * 
+     *
      * @type {Array<WorkflowChoice>}
      * @memberof WorkflowParam
      */
@@ -1773,7 +1772,7 @@ export const AlertsApiFetchParamCreator = function (configuration?: Configuratio
         /**
          * Create an alert
          * @summary Create alert
-         * @param {Alert} alert 
+         * @param {Alert} alert
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1819,7 +1818,7 @@ export const AlertsApiFetchParamCreator = function (configuration?: Configuratio
         /**
          * Delete an alert
          * @summary Delete alert
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1862,7 +1861,7 @@ export const AlertsApiFetchParamCreator = function (configuration?: Configuratio
         /**
          * Get an alert
          * @summary Get alert
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1951,7 +1950,7 @@ export const AlertsApiFp = function (configuration?: Configuration) {
         /**
          * Create an alert
          * @summary Create alert
-         * @param {Alert} alert 
+         * @param {Alert} alert
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1970,7 +1969,7 @@ export const AlertsApiFp = function (configuration?: Configuration) {
         /**
          * Delete an alert
          * @summary Delete alert
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1989,7 +1988,7 @@ export const AlertsApiFp = function (configuration?: Configuration) {
         /**
          * Get an alert
          * @summary Get alert
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2035,7 +2034,7 @@ export const AlertsApiFactory = function (configuration?: Configuration, fetch?:
         /**
          * Create an alert
          * @summary Create alert
-         * @param {Alert} alert 
+         * @param {Alert} alert
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2045,7 +2044,7 @@ export const AlertsApiFactory = function (configuration?: Configuration, fetch?:
         /**
          * Delete an alert
          * @summary Delete alert
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2055,7 +2054,7 @@ export const AlertsApiFactory = function (configuration?: Configuration, fetch?:
         /**
          * Get an alert
          * @summary Get alert
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2084,7 +2083,7 @@ export class AlertsApi extends BaseAPI {
     /**
      * Create an alert
      * @summary Create alert
-     * @param {Alert} alert 
+     * @param {Alert} alert
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AlertsApi
@@ -2096,7 +2095,7 @@ export class AlertsApi extends BaseAPI {
     /**
      * Delete an alert
      * @summary Delete alert
-     * @param {string} id 
+     * @param {string} id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AlertsApi
@@ -2108,7 +2107,7 @@ export class AlertsApi extends BaseAPI {
     /**
      * Get an alert
      * @summary Get alert
-     * @param {string} id 
+     * @param {string} id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AlertsApi
@@ -2139,7 +2138,7 @@ export const CapturesApiFetchParamCreator = function (configuration?: Configurat
         /**
          * Create a capture
          * @summary Create capture
-         * @param {Capture} capture 
+         * @param {Capture} capture
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2185,7 +2184,7 @@ export const CapturesApiFetchParamCreator = function (configuration?: Configurat
         /**
          * Delete a capture
          * @summary Delete capture
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2228,7 +2227,7 @@ export const CapturesApiFetchParamCreator = function (configuration?: Configurat
         /**
          * Get a capture
          * @summary Get capture
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2317,7 +2316,7 @@ export const CapturesApiFp = function (configuration?: Configuration) {
         /**
          * Create a capture
          * @summary Create capture
-         * @param {Capture} capture 
+         * @param {Capture} capture
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2336,7 +2335,7 @@ export const CapturesApiFp = function (configuration?: Configuration) {
         /**
          * Delete a capture
          * @summary Delete capture
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2355,7 +2354,7 @@ export const CapturesApiFp = function (configuration?: Configuration) {
         /**
          * Get a capture
          * @summary Get capture
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2401,7 +2400,7 @@ export const CapturesApiFactory = function (configuration?: Configuration, fetch
         /**
          * Create a capture
          * @summary Create capture
-         * @param {Capture} capture 
+         * @param {Capture} capture
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2411,7 +2410,7 @@ export const CapturesApiFactory = function (configuration?: Configuration, fetch
         /**
          * Delete a capture
          * @summary Delete capture
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2421,7 +2420,7 @@ export const CapturesApiFactory = function (configuration?: Configuration, fetch
         /**
          * Get a capture
          * @summary Get capture
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2450,7 +2449,7 @@ export class CapturesApi extends BaseAPI {
     /**
      * Create a capture
      * @summary Create capture
-     * @param {Capture} capture 
+     * @param {Capture} capture
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CapturesApi
@@ -2462,7 +2461,7 @@ export class CapturesApi extends BaseAPI {
     /**
      * Delete a capture
      * @summary Delete capture
-     * @param {string} id 
+     * @param {string} id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CapturesApi
@@ -2474,7 +2473,7 @@ export class CapturesApi extends BaseAPI {
     /**
      * Get a capture
      * @summary Get capture
-     * @param {string} id 
+     * @param {string} id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CapturesApi
@@ -2505,7 +2504,7 @@ export const ConfigApiFetchParamCreator = function (configuration?: Configuratio
         /**
          * Get configuration value
          * @summary Get configuration
-         * @param {string} key 
+         * @param {string} key
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2557,7 +2556,7 @@ export const ConfigApiFp = function (configuration?: Configuration) {
         /**
          * Get configuration value
          * @summary Get configuration
-         * @param {string} key 
+         * @param {string} key
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2585,7 +2584,7 @@ export const ConfigApiFactory = function (configuration?: Configuration, fetch?:
         /**
          * Get configuration value
          * @summary Get configuration
-         * @param {string} key 
+         * @param {string} key
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2605,7 +2604,7 @@ export class ConfigApi extends BaseAPI {
     /**
      * Get configuration value
      * @summary Get configuration
-     * @param {string} key 
+     * @param {string} key
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ConfigApi
@@ -2625,7 +2624,7 @@ export const EdgeRulesApiFetchParamCreator = function (configuration?: Configura
         /**
          * Create an edge rule
          * @summary Create edge rule
-         * @param {EdgeRule} edge_rule 
+         * @param {EdgeRule} edge_rule
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2671,7 +2670,7 @@ export const EdgeRulesApiFetchParamCreator = function (configuration?: Configura
         /**
          * Delete an edge rule
          * @summary Delete edge rule
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2714,7 +2713,7 @@ export const EdgeRulesApiFetchParamCreator = function (configuration?: Configura
         /**
          * Get an edge rule
          * @summary Get edge rule
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2803,7 +2802,7 @@ export const EdgeRulesApiFp = function (configuration?: Configuration) {
         /**
          * Create an edge rule
          * @summary Create edge rule
-         * @param {EdgeRule} edge_rule 
+         * @param {EdgeRule} edge_rule
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2822,7 +2821,7 @@ export const EdgeRulesApiFp = function (configuration?: Configuration) {
         /**
          * Delete an edge rule
          * @summary Delete edge rule
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2841,7 +2840,7 @@ export const EdgeRulesApiFp = function (configuration?: Configuration) {
         /**
          * Get an edge rule
          * @summary Get edge rule
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2887,7 +2886,7 @@ export const EdgeRulesApiFactory = function (configuration?: Configuration, fetc
         /**
          * Create an edge rule
          * @summary Create edge rule
-         * @param {EdgeRule} edge_rule 
+         * @param {EdgeRule} edge_rule
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2897,7 +2896,7 @@ export const EdgeRulesApiFactory = function (configuration?: Configuration, fetc
         /**
          * Delete an edge rule
          * @summary Delete edge rule
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2907,7 +2906,7 @@ export const EdgeRulesApiFactory = function (configuration?: Configuration, fetc
         /**
          * Get an edge rule
          * @summary Get edge rule
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2936,7 +2935,7 @@ export class EdgeRulesApi extends BaseAPI {
     /**
      * Create an edge rule
      * @summary Create edge rule
-     * @param {EdgeRule} edge_rule 
+     * @param {EdgeRule} edge_rule
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof EdgeRulesApi
@@ -2948,7 +2947,7 @@ export class EdgeRulesApi extends BaseAPI {
     /**
      * Delete an edge rule
      * @summary Delete edge rule
-     * @param {string} id 
+     * @param {string} id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof EdgeRulesApi
@@ -2960,7 +2959,7 @@ export class EdgeRulesApi extends BaseAPI {
     /**
      * Get an edge rule
      * @summary Get edge rule
-     * @param {string} id 
+     * @param {string} id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof EdgeRulesApi
@@ -2991,7 +2990,7 @@ export const InjectionsApiFetchParamCreator = function (configuration?: Configur
         /**
          * Create an injection
          * @summary Create injection
-         * @param {PacketInjection} injection 
+         * @param {PacketInjection} injection
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3037,7 +3036,7 @@ export const InjectionsApiFetchParamCreator = function (configuration?: Configur
         /**
          * Delete an injection
          * @summary Delete injection
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3080,7 +3079,7 @@ export const InjectionsApiFetchParamCreator = function (configuration?: Configur
         /**
          * Get an injection
          * @summary Get injection
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3169,7 +3168,7 @@ export const InjectionsApiFp = function (configuration?: Configuration) {
         /**
          * Create an injection
          * @summary Create injection
-         * @param {PacketInjection} injection 
+         * @param {PacketInjection} injection
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3188,7 +3187,7 @@ export const InjectionsApiFp = function (configuration?: Configuration) {
         /**
          * Delete an injection
          * @summary Delete injection
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3207,7 +3206,7 @@ export const InjectionsApiFp = function (configuration?: Configuration) {
         /**
          * Get an injection
          * @summary Get injection
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3253,7 +3252,7 @@ export const InjectionsApiFactory = function (configuration?: Configuration, fet
         /**
          * Create an injection
          * @summary Create injection
-         * @param {PacketInjection} injection 
+         * @param {PacketInjection} injection
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3263,7 +3262,7 @@ export const InjectionsApiFactory = function (configuration?: Configuration, fet
         /**
          * Delete an injection
          * @summary Delete injection
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3273,7 +3272,7 @@ export const InjectionsApiFactory = function (configuration?: Configuration, fet
         /**
          * Get an injection
          * @summary Get injection
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3302,7 +3301,7 @@ export class InjectionsApi extends BaseAPI {
     /**
      * Create an injection
      * @summary Create injection
-     * @param {PacketInjection} injection 
+     * @param {PacketInjection} injection
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof InjectionsApi
@@ -3314,7 +3313,7 @@ export class InjectionsApi extends BaseAPI {
     /**
      * Delete an injection
      * @summary Delete injection
-     * @param {string} id 
+     * @param {string} id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof InjectionsApi
@@ -3326,7 +3325,7 @@ export class InjectionsApi extends BaseAPI {
     /**
      * Get an injection
      * @summary Get injection
-     * @param {string} id 
+     * @param {string} id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof InjectionsApi
@@ -3357,8 +3356,8 @@ export const LoginApiFetchParamCreator = function (configuration?: Configuration
         /**
          * Login
          * @summary Login
-         * @param {string} username 
-         * @param {string} password 
+         * @param {string} username
+         * @param {string} password
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3411,8 +3410,8 @@ export const LoginApiFp = function (configuration?: Configuration) {
         /**
          * Login
          * @summary Login
-         * @param {string} username 
-         * @param {string} password 
+         * @param {string} username
+         * @param {string} password
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3440,8 +3439,8 @@ export const LoginApiFactory = function (configuration?: Configuration, fetch?: 
         /**
          * Login
          * @summary Login
-         * @param {string} username 
-         * @param {string} password 
+         * @param {string} username
+         * @param {string} password
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3461,8 +3460,8 @@ export class LoginApi extends BaseAPI {
     /**
      * Login
      * @summary Login
-     * @param {string} username 
-     * @param {string} password 
+     * @param {string} username
+     * @param {string} password
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof LoginApi
@@ -3482,7 +3481,7 @@ export const NodeRulesApiFetchParamCreator = function (configuration?: Configura
         /**
          * Create a node rule
          * @summary Create node rule
-         * @param {NodeRule} node_rule 
+         * @param {NodeRule} node_rule
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3528,7 +3527,7 @@ export const NodeRulesApiFetchParamCreator = function (configuration?: Configura
         /**
          * Delete a node rule
          * @summary Delete node rule
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3571,7 +3570,7 @@ export const NodeRulesApiFetchParamCreator = function (configuration?: Configura
         /**
          * Get a node rule
          * @summary Get node rule
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3660,7 +3659,7 @@ export const NodeRulesApiFp = function (configuration?: Configuration) {
         /**
          * Create a node rule
          * @summary Create node rule
-         * @param {NodeRule} node_rule 
+         * @param {NodeRule} node_rule
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3679,7 +3678,7 @@ export const NodeRulesApiFp = function (configuration?: Configuration) {
         /**
          * Delete a node rule
          * @summary Delete node rule
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3698,7 +3697,7 @@ export const NodeRulesApiFp = function (configuration?: Configuration) {
         /**
          * Get a node rule
          * @summary Get node rule
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3744,7 +3743,7 @@ export const NodeRulesApiFactory = function (configuration?: Configuration, fetc
         /**
          * Create a node rule
          * @summary Create node rule
-         * @param {NodeRule} node_rule 
+         * @param {NodeRule} node_rule
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3754,7 +3753,7 @@ export const NodeRulesApiFactory = function (configuration?: Configuration, fetc
         /**
          * Delete a node rule
          * @summary Delete node rule
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3764,7 +3763,7 @@ export const NodeRulesApiFactory = function (configuration?: Configuration, fetc
         /**
          * Get a node rule
          * @summary Get node rule
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3793,7 +3792,7 @@ export class NodeRulesApi extends BaseAPI {
     /**
      * Create a node rule
      * @summary Create node rule
-     * @param {NodeRule} node_rule 
+     * @param {NodeRule} node_rule
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof NodeRulesApi
@@ -3805,7 +3804,7 @@ export class NodeRulesApi extends BaseAPI {
     /**
      * Delete a node rule
      * @summary Delete node rule
-     * @param {string} id 
+     * @param {string} id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof NodeRulesApi
@@ -3817,7 +3816,7 @@ export class NodeRulesApi extends BaseAPI {
     /**
      * Get a node rule
      * @summary Get node rule
-     * @param {string} id 
+     * @param {string} id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof NodeRulesApi
@@ -3848,7 +3847,7 @@ export const PCAPApiFetchParamCreator = function (configuration?: Configuration)
         /**
          * Inject PCAP
          * @summary Inject PCAP
-         * @param {string} status 
+         * @param {string} status
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3903,7 +3902,7 @@ export const PCAPApiFp = function (configuration?: Configuration) {
         /**
          * Inject PCAP
          * @summary Inject PCAP
-         * @param {string} status 
+         * @param {string} status
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3931,7 +3930,7 @@ export const PCAPApiFactory = function (configuration?: Configuration, fetch?: F
         /**
          * Inject PCAP
          * @summary Inject PCAP
-         * @param {string} status 
+         * @param {string} status
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3951,7 +3950,7 @@ export class PCAPApi extends BaseAPI {
     /**
      * Inject PCAP
      * @summary Inject PCAP
-     * @param {string} status 
+     * @param {string} status
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PCAPApi
@@ -4119,7 +4118,7 @@ export const TopologyApiFetchParamCreator = function (configuration?: Configurat
         /**
          * Search topology
          * @summary Search topology
-         * @param {TopologyParams} params 
+         * @param {TopologyParams} params
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4192,7 +4191,7 @@ export const TopologyApiFp = function (configuration?: Configuration) {
         /**
          * Search topology
          * @summary Search topology
-         * @param {TopologyParams} params 
+         * @param {TopologyParams} params
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4229,7 +4228,7 @@ export const TopologyApiFactory = function (configuration?: Configuration, fetch
         /**
          * Search topology
          * @summary Search topology
-         * @param {TopologyParams} params 
+         * @param {TopologyParams} params
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4260,7 +4259,7 @@ export class TopologyApi extends BaseAPI {
     /**
      * Search topology
      * @summary Search topology
-     * @param {TopologyParams} params 
+     * @param {TopologyParams} params
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TopologyApi
@@ -4280,8 +4279,8 @@ export const WorkflowsApiFetchParamCreator = function (configuration?: Configura
         /**
          * Call workflow
          * @summary Call workflow
-         * @param {string} id 
-         * @param {WorkflowCall} params 
+         * @param {string} id
+         * @param {WorkflowCall} params
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4332,7 +4331,7 @@ export const WorkflowsApiFetchParamCreator = function (configuration?: Configura
         /**
          * Create a workflow
          * @summary Create workflow
-         * @param {Workflow} workflow 
+         * @param {Workflow} workflow
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4378,7 +4377,7 @@ export const WorkflowsApiFetchParamCreator = function (configuration?: Configura
         /**
          * Delete a workflow
          * @summary Delete workflow
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4421,7 +4420,7 @@ export const WorkflowsApiFetchParamCreator = function (configuration?: Configura
         /**
          * Get a workflow
          * @summary Get workflow
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4510,8 +4509,8 @@ export const WorkflowsApiFp = function (configuration?: Configuration) {
         /**
          * Call workflow
          * @summary Call workflow
-         * @param {string} id 
-         * @param {WorkflowCall} params 
+         * @param {string} id
+         * @param {WorkflowCall} params
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4530,7 +4529,7 @@ export const WorkflowsApiFp = function (configuration?: Configuration) {
         /**
          * Create a workflow
          * @summary Create workflow
-         * @param {Workflow} workflow 
+         * @param {Workflow} workflow
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4549,7 +4548,7 @@ export const WorkflowsApiFp = function (configuration?: Configuration) {
         /**
          * Delete a workflow
          * @summary Delete workflow
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4568,7 +4567,7 @@ export const WorkflowsApiFp = function (configuration?: Configuration) {
         /**
          * Get a workflow
          * @summary Get workflow
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4614,8 +4613,8 @@ export const WorkflowsApiFactory = function (configuration?: Configuration, fetc
         /**
          * Call workflow
          * @summary Call workflow
-         * @param {string} id 
-         * @param {WorkflowCall} params 
+         * @param {string} id
+         * @param {WorkflowCall} params
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4625,7 +4624,7 @@ export const WorkflowsApiFactory = function (configuration?: Configuration, fetc
         /**
          * Create a workflow
          * @summary Create workflow
-         * @param {Workflow} workflow 
+         * @param {Workflow} workflow
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4635,7 +4634,7 @@ export const WorkflowsApiFactory = function (configuration?: Configuration, fetc
         /**
          * Delete a workflow
          * @summary Delete workflow
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4645,7 +4644,7 @@ export const WorkflowsApiFactory = function (configuration?: Configuration, fetc
         /**
          * Get a workflow
          * @summary Get workflow
-         * @param {string} id 
+         * @param {string} id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -4674,8 +4673,8 @@ export class WorkflowsApi extends BaseAPI {
     /**
      * Call workflow
      * @summary Call workflow
-     * @param {string} id 
-     * @param {WorkflowCall} params 
+     * @param {string} id
+     * @param {WorkflowCall} params
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof WorkflowsApi
@@ -4687,7 +4686,7 @@ export class WorkflowsApi extends BaseAPI {
     /**
      * Create a workflow
      * @summary Create workflow
-     * @param {Workflow} workflow 
+     * @param {Workflow} workflow
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof WorkflowsApi
@@ -4699,7 +4698,7 @@ export class WorkflowsApi extends BaseAPI {
     /**
      * Delete a workflow
      * @summary Delete workflow
-     * @param {string} id 
+     * @param {string} id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof WorkflowsApi
@@ -4711,7 +4710,7 @@ export class WorkflowsApi extends BaseAPI {
     /**
      * Get a workflow
      * @summary Get workflow
-     * @param {string} id 
+     * @param {string} id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof WorkflowsApi
