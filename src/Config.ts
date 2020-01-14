@@ -58,7 +58,6 @@ var DefaultConfig = {
 
         return attrs
     },
-
     _nodeAttrsK8s: function (node: Node): NodeAttrs {
         var attrs = this._newAttrs(node)
 

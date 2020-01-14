@@ -29,7 +29,7 @@ import Login from './Login'
 import App from './App'
 import Tools from './Tools'
 
-// from optionsSkydive
+// from options
 declare var baseurl: string
 
 // expose some tools
@@ -49,24 +49,13 @@ export const mapDispatchToProps = ({
 
 const TopoRoute = connect(mapStateToProps, mapDispatchToProps)(({ component, session, ...props }: any) => {
   const routeComponent = (props: any) => {
-    return React.createElement(component, props)
     // return session.token
     //   ? React.createElement(component, props)
     //   : <Redirect to={{ pathname: '/login' }} />
+    return React.createElement(component, props)
   }
   return <Route {...props} render={routeComponent} />
 })
-
-// const AdminRoute = connect(mapStateToProps, mapDispatchToProps)(({ component, session, ...props }: any) => {
-//   const routeComponent = (props: any) => {
-//     return session.token
-//       ? (session.permissions.includes("admin")
-//         ? React.createElement(component, props)
-//         : <Redirect to={{ pathname: '/' }} />)
-//       : <Redirect to={{ pathname: '/login' }} />
-//   }
-//   return <Route {...props} render={routeComponent} />
-// })
 
 ReactDOM.render(
   <Provider store={store}>
@@ -74,9 +63,8 @@ ReactDOM.render(
       <BrowserRouter history={history} basename={baseurl || ""}>
         <Switch>
           <TopoRoute path="/" component={App} exact />
-          {/* <AdminRoute path="/admin" component={AdminPage} /> */}
-          {/* <Route path="/login" component={Login} /> */}
-          <Redirect from="*" to="/" />
+          <Route path="/login" component={Login} />
+          <Redirect from="*" to={(baseurl || "/") + history.location.search} />
         </Switch>
       </BrowserRouter>
     </SnackbarProvider>
