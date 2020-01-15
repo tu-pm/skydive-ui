@@ -930,14 +930,15 @@ class App extends React.Component<Props, State> {
                       Link types
                   </Typography>
                     <FormGroup>
-                      {Array.from(this.state.linkTagStates.keys()).map((key) => (
-                        <FormControlLabel key={key} control={
-                          <Checkbox value={key} color="primary" onChange={this.onLinkTagStateChange.bind(this)}
-                            checked={this.state.linkTagStates.get(key) === LinkTagState.Visible}
-                            indeterminate={this.state.linkTagStates.get(key) === LinkTagState.EventBased} />
-                        }
-                          label={key} />
-                      ))}
+                      {
+                        Array.from(this.state.linkTagStates.keys()).map((key) => (
+                          <FormControlLabel key={key} control={
+                            <Checkbox value={key} color="primary" onChange={this.onLinkTagStateChange.bind(this)}
+                              checked={this.state.linkTagStates.get(key) === LinkTagState.Visible}
+                              indeterminate={this.state.linkTagStates.get(key) === LinkTagState.EventBased} />
+                          }
+                            label={key} />
+                        ))}
                     </FormGroup>
                   </Paper>
                 </Grid>

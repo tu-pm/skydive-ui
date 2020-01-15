@@ -18,6 +18,10 @@
   fill: rgb(163, 0, 0);
 }
 
+.snmp-down .node-hexagon {
+  fill: rgba(223, 196, 80, 0.863);
+}
+
 .host .node-icon {
   fill: #eee;
 }
@@ -35,6 +39,10 @@
 }
 
 .down .node-icon {
+  fill: #eee;
+}
+
+.snmp-down .node-icon {
   fill: #eee;
 }
 

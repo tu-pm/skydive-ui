@@ -175,7 +175,7 @@ export interface LinkAttrs {
 
 interface Props {
     onClick: () => void
-    sortNodesFnc: (node1: NodeWrapper, node2: NodeWrapper) => number
+    sortNodesFnc: (node1: Node, node2: Node) => number
     onShowNodeContextMenu: (node: Node) => any
     onNodeSelected: (node: Node, isSelected: boolean) => void
     className: string
@@ -846,13 +846,7 @@ export class Topology extends React.Component<Props, {}> {
             var groupSize = this.props.groupSize || defaultGroupSize
             if (wrapper && wrapper.wrapped.children.length > groupSize) {
                 wrapper.children.sort((a, b) => {
-                    if (a.wrapped.sortFirst && !b.wrapped.sortFirst) {
-                        return -1
-                    }
-                    if (!a.wrapped.sortFirst && b.wrapped.sortFirst) {
-                        return 1
-                    }
-                    return a.wrapped.data.Name.localeCompare(b.wrapped.data.Name)
+                    return this.props.sortNodesFnc(a.wrapped, b.wrapped)
                 })
                 children.push(wrapper)
                 if (wrapper.wrapped.state.expanded) {
@@ -1096,7 +1090,7 @@ export class Topology extends React.Component<Props, {}> {
             }
         })
 
-        this.props.onLinkTagChange(tags)
+        // this.props.onLinkTagChange(tags)
 
         // set the cache
         this.visibleLinksCache = links

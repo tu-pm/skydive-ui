@@ -15,10 +15,10 @@ const WEIGHT_K8S_FEDERATION = 100
 const WEIGHT_K8S_CLUSTER = 101
 const WEIGHT_K8S_NODE = 102
 const WEIGHT_K8S_POD = 103
-const WEIGHT_TF_DOMAIN = 100
-const WEIGHT_TF_PROJECT = 101
-const WEIGHT_TF_VIRTUAL_NETWORK = 102
-const WEIGHT_TF_SERVICE_INSTANCE = 103
+const WEIGHT_TF_DOMAIN = 200
+const WEIGHT_TF_PROJECT = 201
+const WEIGHT_TF_VIRTUAL_NETWORK = 202
+const WEIGHT_TF_SERVICE_INSTANCE = 203
 
 var DefaultConfig = {
     subTitle: "",
@@ -177,7 +177,34 @@ var DefaultConfig = {
                 break
             default:
                 attrs.href = "assets/icons/k8s.png"
-                attrs.weight = WEIGHT_K8S_POD
+                attrs.weight = WEIGHT_TF_SERVICE_INSTANCE
+        }
+
+        return attrs
+    },
+    _nodeAttrsTF: function (node: Node): NodeAttrs {
+        var attrs = this._newAttrs(node)
+
+        switch (node.data.Type) {
+            case "TF-Domain":
+                attrs.icon = "\uf0e8"
+                attrs.weight = WEIGHT_TF_DOMAIN
+                break
+            case "TF-Project":
+                attrs.icon = "\uf0e8"
+                attrs.weight = WEIGHT_TF_PROJECT
+                break
+            case "TF-VirtualNetwork":
+                attrs.icon = "\uf0e8"
+                attrs.weight = WEIGHT_TF_VIRTUAL_NETWORK
+                break
+            case "TF-ServiceInstance":
+                attrs.icon = "\uf0e8"
+                attrs.weight = WEIGHT_TF_SERVICE_INSTANCE
+                break
+            default:
+                attrs.icon = "\uf0e8"
+                attrs.weight = WEIGHT_TF_SERVICE_INSTANCE
         }
 
         return attrs
@@ -196,6 +223,16 @@ var DefaultConfig = {
                 break
             case "switch":
                 attrs.icon = "\uf6ff"
+                if (node.data.Name.indexOf("leaf") !== -1) {
+                    attrs.weight = WEIGHT_FABRIC_LEAF
+                } else if (node.data.Name.indexOf("spine") !== -1) {
+                    attrs.weight = WEIGHT_FABRIC_SPINE
+                } else {
+                    attrs.weight = WEIGHT_FABRIC
+                }
+                if (node.data && node.data.SNMPState === "DOWN") {
+                    attrs.classes.push("snmp-down")
+                }
                 break
             case "bridge":
             case "ovsbridge":
@@ -269,11 +306,27 @@ var DefaultConfig = {
         switch (node.data.Manager) {
             case "k8s":
                 return this._nodeAttrsK8s(node)
+            case "TungstenFabric":
+                return this._nodeAttrsTF(node)
             default:
                 return this._nodeAttrsInfra(node)
         }
     },
     nodeSortFnc: function (a: Node, b: Node) {
+        if (a.sortFirst && !b.sortFirst) {
+            return -1
+        }
+        if (!a.sortFirst && b.sortFirst) {
+            return 1
+        }
+        if (a.data.State && b.data.State) {
+            if (a.data.State === "UP" && b.data.State === "DOWN") {
+                return -1
+            }
+            if (a.data.State === "DOWN" && b.data.State === "UP") {
+                return 1
+            }
+        }
         return a.data.Name.localeCompare(b.data.Name)
     },
     nodeClicked: function (node: Node) {
