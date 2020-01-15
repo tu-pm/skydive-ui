@@ -2140,7 +2140,7 @@ export class Topology extends React.Component<Props, {}> {
 
         const isGroup = (d: D3Node) => d.data.type === WrapperType.Group
         const layerSize = (padding: number) => (d: D3Node) => (
-            isGroup(d) ? (20 + padding) : (30 + 2 * padding)
+            isGroup(d) ? (10 + 2 * padding) : (30 + 2 * padding)
         )
 
         const layerClass = (className: string) => (d: D3Node) => (
@@ -2169,12 +2169,13 @@ export class Topology extends React.Component<Props, {}> {
             .attr("class", layerClass("node-circle"))
             .attr("r", layerSize(8))
 
-        nodeEnter.append("circle")
-            .attr("class", layerClass("node-disc"))
-            .attr("r", layerSize(4))
-            .attr("pointer-events", "none")
+        // nodeEnter.append("circle")
+        //     .attr("class", layerClass("node-disc"))
+        //     .attr("r", layerSize(4))
+        //     .attr("pointer-events", "none")
 
         nodeEnter.append("path")
+            .filter((d: D3Node) => d.data.type !== WrapperType.Group)
             .attr("class", layerClass("node-hexagon"))
             .attr("d", (d: D3Node) => this.liner(this.hexagon(d, layerSize(0)(d))))
             .attr("pointer-events", "none")
@@ -2189,22 +2190,23 @@ export class Topology extends React.Component<Props, {}> {
         nodeEnter.each(function (d: D3Node) {
             var el = select(this)
             var attrs = self.props.nodeAttrs(d.data.wrapped)
-
-            if (isImgIcon(d)) {
-                el.append("image")
-                    .attr("class", (d: D3Node) => "node-icon " + attrs.iconClass)
-                    .attr("transform", "translate(-16,-16)")
-                    .attr("width", (d: D3Node) => isGroup(d) ? 20 : 32)
-                    .attr("heigh", (d: D3Node) => isGroup(d) ? 20 : 32)
-                    .attr("xlink:href", (d: D3Node) => attrs.href)
-                    .attr("pointer-events", "none")
-            } else {
-                el.append("text")
-                    .attr("class", (d: D3Node) => "node-icon " + attrs.iconClass)
-                    .attr("dy", (d: D3Node) => isGroup(d) ? 7 : 9)
-                    .text((d: D3Node) => attrs.icon)
-                    .attr("pointer-events", "none")
-                    .style("font-size", (d: D3Node) => isGroup(d) ? "1em" : "1.5em")
+            if (!isGroup(d)) {
+                if (isImgIcon(d)) {
+                    el.append("image")
+                        .attr("class", (d: D3Node) => "node-icon " + attrs.iconClass)
+                        .attr("transform", "translate(-16,-16)")
+                        .attr("width", (d: D3Node) => isGroup(d) ? 20 : 32)
+                        .attr("heigh", (d: D3Node) => isGroup(d) ? 20 : 32)
+                        .attr("xlink:href", (d: D3Node) => attrs.href)
+                        .attr("pointer-events", "none")
+                } else {
+                    el.append("text")
+                        .attr("class", (d: D3Node) => "node-icon " + attrs.iconClass)
+                        .attr("dy", (d: D3Node) => isGroup(d) ? 7 : 9)
+                        .text((d: D3Node) => attrs.icon)
+                        .attr("pointer-events", "none")
+                        .style("font-size", (d: D3Node) => isGroup(d) ? "1em" : "1.5em")
+                }
             }
         })
 
@@ -2308,6 +2310,7 @@ export class Topology extends React.Component<Props, {}> {
             .attr("pointer-events", "none")
 
         exco.append("circle")
+            .filter((d: D3Node) => d.data.type !== WrapperType.Group)
             .attr("class", "node-exco-circle")
             .attr("cx", layerSize(5))
             .attr("cy", layerSize(0))
@@ -2327,10 +2330,20 @@ export class Topology extends React.Component<Props, {}> {
         }
 
         exco.append("text")
+            .filter((d: D3Node) => d.data.type !== WrapperType.Group)
             .attr("id", (d: D3Node) => "exco-" + d.data.id)
             .attr("class", "node-exco-children")
             .attr("x", layerSize(5))
             .attr("y", layerSize(3))
+            .text((d: D3Node) => num(d.data))
+        
+        exco.append("text")
+            .filter((d: D3Node) => d.data.type === WrapperType.Group)
+            .attr("id", (d: D3Node) => "exco-" + d.data.id)
+            .attr("class", "node-exco-children")
+            .attr("x", layerSize(-5))
+            .attr("y", layerSize(0))
+            .style("font-size", "2em")
             .text((d: D3Node) => num(d.data))
 
         node.select("text.node-exco-children")
