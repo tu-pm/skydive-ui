@@ -21,6 +21,8 @@ import Websocket from 'react-websocket'
 import { debounce } from 'throttle-debounce'
 
 import { withStyles } from '@material-ui/core/styles'
+import { ThemeProvider } from "@material-ui/styles"
+import { createMuiTheme } from "@material-ui/core"
 import CssBaseline from '@material-ui/core/CssBaseline'
 import Drawer from '@material-ui/core/Drawer'
 import AppBar from '@material-ui/core/AppBar'
@@ -106,6 +108,12 @@ interface State {
   isSelectionOpen: boolean
   wsContext: WSContext
 }
+
+const themeX = createMuiTheme({
+  palette: {
+    type: "dark"
+  }
+})
 
 class App extends React.Component<Props, State> {
 
@@ -763,196 +771,198 @@ class App extends React.Component<Props, State> {
     const { classes } = this.props
 
     return (
-      <div className={classes.app}>
-        <CssBaseline />
-        {!this.staticDataURL && this.subscriberURL() &&
-          <Websocket ref={node => this.websocket = node} url={this.subscriberURL()} onOpen={this.onWebSocketOpen.bind(this)}
-            onMessage={this.onWebSocketMessage.bind(this)} onClose={this.onWebSocketClose.bind(this)}
-            reconnectIntervalInMilliSeconds={2500} />
-        }
-        <AppBar position="absolute" className={clsx(classes.appBar, this.state.isNavOpen && classes.appBarShift)}>
-          <Toolbar className={classes.toolbar}>
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="open drawer"
-              onClick={this.openDrawer.bind(this)}
-              className={clsx(classes.menuButton, this.state.isNavOpen && classes.menuButtonHidden)}>
-              <MenuIcon />
-            </IconButton>
-            <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-              Topology Visualizer
-            </Typography>
-            {this.props.config.subTitle &&
-              <Typography className={classes.subTitle} variant="caption">{this.props.config.subTitle}</Typography>
-            }
-            <div className={classes.search}>
-              <AutoCompleteInput placeholder="metadata value" suggestions={this.state.suggestions} onChange={this.onSearchChange.bind(this)} />
-            </div>
-            <div className={classes.grow} />
-            <div>
+      <ThemeProvider theme={themeX}>
+        <div className={classes.app}>
+          <CssBaseline />
+          {!this.staticDataURL && this.subscriberURL() &&
+            <Websocket ref={node => this.websocket = node} url={this.subscriberURL()} onOpen={this.onWebSocketOpen.bind(this)}
+              onMessage={this.onWebSocketMessage.bind(this)} onClose={this.onWebSocketClose.bind(this)}
+              reconnectIntervalInMilliSeconds={2500} />
+          }
+          <AppBar position="absolute" className={clsx(classes.appBar, this.state.isNavOpen && classes.appBarShift)}>
+            <Toolbar className={classes.toolbar}>
               <IconButton
-                aria-controls="menu-selection"
-                aria-haspopup="true"
-                onClick={(event: React.MouseEvent<HTMLElement>) => this.props.selection.length > 0 && this.openMenu("selection", event)}
-                color="inherit">
-                <Badge badgeContent={this.props.selection.length} color="secondary">
-                  <LocationOnIcon />
-                </Badge>
+                edge="start"
+                color="inherit"
+                aria-label="open drawer"
+                onClick={this.openDrawer.bind(this)}
+                className={clsx(classes.menuButton, this.state.isNavOpen && classes.menuButtonHidden)}>
+                <MenuIcon />
               </IconButton>
-              <Menu
-                id="menu-selection"
-                anchorEl={this.state.anchorEl.get("selection")}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(this.state.anchorEl.get("selection"))}
-                onClose={this.closeMenu.bind(this, "selection")}>
-                <MenuItem onClick={() => { this.closeMenu("selection"); this.openSelection() }}>Show selection</MenuItem>
-                <MenuItem onClick={() => { this.closeMenu("selection"); this.unselectAll() }}>Unselect all</MenuItem>
-              </Menu>
-              <IconButton
-                aria-label="account of current user"
-                aria-controls="menu-profile"
-                aria-haspopup="true"
-                onClick={this.openMenu.bind(this, "profile")}
-                color="inherit">
-                <AccountCircle />
-              </IconButton>
-              <Menu
-                id="menu-profile"
-                anchorEl={this.state.anchorEl.get("profile")}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(this.state.anchorEl.get("profile"))}
-                onClose={this.closeMenu.bind(this, "profile")}>
-                <MenuItem onClick={this.logout.bind(this)}>Logout</MenuItem>
-              </Menu>
-            </div>
-          </Toolbar>
-        </AppBar>
-        <Drawer
-          variant="permanent"
-          classes={{
-            paper: clsx(classes.drawerPaper, !this.state.isNavOpen && classes.drawerPaperClose),
-          }}
-          open={this.state.isNavOpen}>
-          <div className={classes.toolbarIcon}>
-            <IconButton onClick={() => this.closeDrawer()}>
-              <ChevronLeftIcon />
-            </IconButton>
-          </div>
-          <Divider />
-          <List>
-            <ListItem button onClick={this.admin.bind(this)}>
-              <ListItemIcon>
-                <SettingsIcon />
-              </ListItemIcon>
-              <ListItemText primary="Settings" />
-            </ListItem>
-          </List>
-          <Divider />
-          <List>{helpListItems}</List>
-        </Drawer>
-        <main className={classes.content}>
-          <div className={classes.appBarSpacer} />
-          <Container maxWidth="xl" className={classes.container}>
-            <Topology className={classes.topology} ref={node => this.tc = node} nodeAttrs={this.nodeAttrs.bind(this)} linkAttrs={this.linkAttrs.bind(this)}
-              onNodeSelected={this.onNodeSelected.bind(this)}
-              sortNodesFnc={this.sortNodesFnc.bind(this)}
-              onShowNodeContextMenu={this.onShowNodeContextMenu.bind(this)}
-              weightTitles={this.weightTitles()}
-              groupSize={this.props.config.groupSize}
-              groupType={this.props.config.groupType.bind(this.props.config)}
-              groupName={this.props.config.groupName.bind(this.props.config)}
-              onClick={this.onTopologyClick.bind(this)}
-              onLinkSelected={this.onLinkSelected.bind(this)}
-              onLinkTagChange={this.onLinkTagChange.bind(this)}
-              onNodeClicked={this.props.config.nodeClicked.bind(this.props.config)}
-              onNodeDblClicked={this.props.config.nodeDblClicked.bind(this.props.config)}
-              defaultLinkTagMode={this.props.config.defaultLinkTagMode.bind(this.props.config)}
-            />
-          </Container>
-          <Container className={classes.rightPanel}>
-            <Paper className={clsx(classes.rightPanelPaper, (!this.props.selection.length || !this.state.isSelectionOpen) && classes.rightPanelPaperClose)}
-              square={true}>
-              <SelectionPanel onLocation={this.onSelectionLocation.bind(this)} onClose={this.onSelectionClose.bind(this)} />
-            </Paper>
-          </Container>
-          <Container className={classes.nodeTagsPanel}>
-            {Array.from(this.state.nodeTagStates.keys()).sort((a, b) => {
-              if (a === this.props.config.defaultNodeTag) {
-                return -1
-              } else if (b === this.props.config.defaultNodeTag) {
-                return 1
+              <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
+                Topology Visualizer
+              </Typography>
+              {this.props.config.subTitle &&
+                <Typography className={classes.subTitle} variant="caption">{this.props.config.subTitle}</Typography>
               }
-              return 0
-            }).map((tag) => (
-              <Fab key={tag} variant="extended" aria-label="delete" size="small"
-                color={this.state.nodeTagStates.get(tag) ? "primary" : "default"}
-                className={classes.nodeTagsFab}
-                onClick={this.activeNodeTag.bind(this, tag)}>
-                {tag}
-              </Fab>
-            ))}
-          </Container>
-          {this.staticDataURL === "" &&
-            <Container className={classes.filtersPanel}>
-              {this.props.config.filters.map((filter, i) => (
-                <Button variant="contained" key={i} aria-label="delete" size="small"
-                  color={this.state.wsContext.GremlinFilter === filter.gremlin ? "primary" : "default"}
-                  className={classes.filtersFab}
-                  onClick={() => { this.setGremlinFilter(filter.gremlin) }}>
-                  {filter.label}
-                </Button>
+              <div className={classes.search}>
+                <AutoCompleteInput placeholder="metadata value" suggestions={this.state.suggestions} onChange={this.onSearchChange.bind(this)} />
+              </div>
+              <div className={classes.grow} />
+              <div>
+                <IconButton
+                  aria-controls="menu-selection"
+                  aria-haspopup="true"
+                  onClick={(event: React.MouseEvent<HTMLElement>) => this.props.selection.length > 0 && this.openMenu("selection", event)}
+                  color="inherit">
+                  <Badge badgeContent={this.props.selection.length} color="secondary">
+                    <LocationOnIcon />
+                  </Badge>
+                </IconButton>
+                <Menu
+                  id="menu-selection"
+                  anchorEl={this.state.anchorEl.get("selection")}
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  keepMounted
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  open={Boolean(this.state.anchorEl.get("selection"))}
+                  onClose={this.closeMenu.bind(this, "selection")}>
+                  <MenuItem onClick={() => { this.closeMenu("selection"); this.openSelection() }}>Show selection</MenuItem>
+                  <MenuItem onClick={() => { this.closeMenu("selection"); this.unselectAll() }}>Unselect all</MenuItem>
+                </Menu>
+                <IconButton
+                  aria-label="account of current user"
+                  aria-controls="menu-profile"
+                  aria-haspopup="true"
+                  onClick={this.openMenu.bind(this, "profile")}
+                  color="inherit">
+                  <AccountCircle />
+                </IconButton>
+                <Menu
+                  id="menu-profile"
+                  anchorEl={this.state.anchorEl.get("profile")}
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  keepMounted
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  open={Boolean(this.state.anchorEl.get("profile"))}
+                  onClose={this.closeMenu.bind(this, "profile")}>
+                  <MenuItem onClick={this.logout.bind(this)}>Logout</MenuItem>
+                </Menu>
+              </div>
+            </Toolbar>
+          </AppBar>
+          <Drawer
+            variant="permanent"
+            classes={{
+              paper: clsx(classes.drawerPaper, !this.state.isNavOpen && classes.drawerPaperClose),
+            }}
+            open={this.state.isNavOpen}>
+            <div className={classes.toolbarIcon}>
+              <IconButton onClick={() => this.closeDrawer()}>
+                <ChevronLeftIcon />
+              </IconButton>
+            </div>
+            <Divider />
+            <List>
+              <ListItem button onClick={this.admin.bind(this)}>
+                <ListItemIcon>
+                  <SettingsIcon />
+                </ListItemIcon>
+                <ListItemText primary="Settings" />
+              </ListItem>
+            </List>
+            <Divider />
+            <List>{helpListItems}</List>
+          </Drawer>
+          <main className={classes.content}>
+            <div className={classes.appBarSpacer} />
+            <Container maxWidth="xl" className={classes.container}>
+              <Topology className={classes.topology} ref={node => this.tc = node} nodeAttrs={this.nodeAttrs.bind(this)} linkAttrs={this.linkAttrs.bind(this)}
+                onNodeSelected={this.onNodeSelected.bind(this)}
+                sortNodesFnc={this.sortNodesFnc.bind(this)}
+                onShowNodeContextMenu={this.onShowNodeContextMenu.bind(this)}
+                weightTitles={this.weightTitles()}
+                groupSize={this.props.config.groupSize}
+                groupType={this.props.config.groupType.bind(this.props.config)}
+                groupName={this.props.config.groupName.bind(this.props.config)}
+                onClick={this.onTopologyClick.bind(this)}
+                onLinkSelected={this.onLinkSelected.bind(this)}
+                onLinkTagChange={this.onLinkTagChange.bind(this)}
+                onNodeClicked={this.props.config.nodeClicked.bind(this.props.config)}
+                onNodeDblClicked={this.props.config.nodeDblClicked.bind(this.props.config)}
+                defaultLinkTagMode={this.props.config.defaultLinkTagMode.bind(this.props.config)}
+              />
+            </Container>
+            <Container className={classes.rightPanel}>
+              <Paper className={clsx(classes.rightPanelPaper, (!this.props.selection.length || !this.state.isSelectionOpen) && classes.rightPanelPaperClose)}
+                square={true}>
+                <SelectionPanel onLocation={this.onSelectionLocation.bind(this)} onClose={this.onSelectionClose.bind(this)} />
+              </Paper>
+            </Container>
+            <Container className={classes.nodeTagsPanel}>
+              {Array.from(this.state.nodeTagStates.keys()).sort((a, b) => {
+                if (a === this.props.config.defaultNodeTag) {
+                  return -1
+                } else if (b === this.props.config.defaultNodeTag) {
+                  return 1
+                }
+                return 0
+              }).map((tag) => (
+                <Fab key={tag} variant="extended" aria-label="delete" size="small"
+                  color={this.state.nodeTagStates.get(tag) ? "primary" : "default"}
+                  className={classes.nodeTagsFab}
+                  onClick={this.activeNodeTag.bind(this, tag)}>
+                  {tag}
+                </Fab>
               ))}
             </Container>
-          }
-          {this.state.linkTagStates.size !== 0 &&
-            <Container className={classes.linkTagsPanel}>
-              <Grid container spacing={2}>
-                <Grid item xs={5}>
-                  <Paper className={classes.linkTagsPanelPaper}>
-                    <Typography component="h6" color="primary" gutterBottom>
-                      Link types
-                  </Typography>
-                    <FormGroup>
-                      {
-                        Array.from(this.state.linkTagStates.keys()).map((key) => (
-                          <FormControlLabel key={key} control={
-                            <Checkbox value={key} color="primary" onChange={this.onLinkTagStateChange.bind(this)}
-                              checked={this.state.linkTagStates.get(key) === LinkTagState.Visible}
-                              indeterminate={this.state.linkTagStates.get(key) === LinkTagState.EventBased} />
-                          }
-                            label={key} />
-                        ))}
-                    </FormGroup>
-                  </Paper>
+            {this.staticDataURL === "" &&
+              <Container className={classes.filtersPanel}>
+                {this.props.config.filters.map((filter, i) => (
+                  <Button variant="contained" key={i} aria-label="delete" size="small"
+                    color={this.state.wsContext.GremlinFilter === filter.gremlin ? "primary" : "default"}
+                    className={classes.filtersFab}
+                    onClick={() => { this.setGremlinFilter(filter.gremlin) }}>
+                    {filter.label}
+                  </Button>
+                ))}
+              </Container>
+            }
+            {this.state.linkTagStates.size !== 0 &&
+              <Container className={classes.linkTagsPanel}>
+                <Grid container spacing={2}>
+                  <Grid item xs={5}>
+                    <Paper className={classes.linkTagsPanelPaper}>
+                      <Typography component="h6" gutterBottom>
+                        Link types
+                    </Typography>
+                      <FormGroup>
+                        {
+                          Array.from(this.state.linkTagStates.keys()).map((key) => (
+                            <FormControlLabel key={key} control={
+                              <Checkbox value={key} color="primary" onChange={this.onLinkTagStateChange.bind(this)}
+                                checked={this.state.linkTagStates.get(key) === LinkTagState.Visible}
+                                indeterminate={this.state.linkTagStates.get(key) === LinkTagState.EventBased} />
+                            }
+                              label={key} />
+                          ))}
+                      </FormGroup>
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={7}>
+                    {this.tc && <IpPathTracing
+                      tracePath={this.tc.tracePath.bind(this.tc)}
+                      clearPath={this.tc.clearHighlightedPath.bind(this.tc)}
+                    />}
+                  </Grid>
                 </Grid>
-                <Grid item xs={7}>
-                  {this.tc && <IpPathTracing
-                    tracePath={this.tc.tracePath.bind(this.tc)}
-                    clearPath={this.tc.clearHighlightedPath.bind(this.tc)}
-                  />}
-                </Grid>
-              </Grid>
-            </Container>
-          }
-        </main>
-      </div>
+              </Container>
+            }
+          </main>
+        </div>
+      </ThemeProvider>
     )
   }
 }

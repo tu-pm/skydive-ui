@@ -52,7 +52,7 @@ class IpPathTracing extends React.Component<Props, State> {
 
         return (
             <Paper className={classes.ipPathTracingPaper}>
-                <Typography component="h6" color="primary" gutterBottom>
+                <Typography component="h6" gutterBottom>
                     Lookup Path
                   </Typography>
                 <TextField
@@ -78,7 +78,7 @@ class IpPathTracing extends React.Component<Props, State> {
                         </Button>
                     </Grid>
                     <Grid item>
-                        <Button variant="contained" color="default" onClick={this.handleClear}>
+                        <Button variant="contained" color="primary" onClick={this.handleClear}>
                             Clear
                         </Button>
                     </Grid>

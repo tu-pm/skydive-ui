@@ -7,9 +7,9 @@ svg {
 }
 
 .level-zone {
-    stroke: #000;
+    stroke: rgb(255, 255, 255);
     stroke-dasharray: 5, 10;
-    fill: #f6f6f6;
+    fill: #303030;
 }
 
 .level-label rect {
@@ -23,7 +23,7 @@ svg {
 
 .hiera-links {
     fill: none;
-    stroke: #333;
+    stroke: rgb(255, 255, 255);
     stroke-width: 2;
 }
 
@@ -51,7 +51,7 @@ svg {
 
 .links {
     fill: none;
-    stroke: #0069bd;
+    stroke: #16e1fc;
     stroke-width: 3;
     marker-start: url(#link-marker);
     marker-end: url(#link-marker);
@@ -188,7 +188,7 @@ svg {
 
 .node-exco-children {
     font-size: 16px;
-    fill: #fff;
+    fill: rgb(0, 0, 0);
     text-anchor: middle;
     font-weight: bold;
     font-family: sans-serif;
@@ -201,13 +201,13 @@ svg {
 }
 
 .group .curly-brace-bg {
-    fill: #e0e0e0;
+    fill: #424242;
     stroke: #ddd;
     stroke-width: 2px;
 }
 
 .group .curly-brace-owner-bg {
-    fill: #cac9c9;
+    fill: #4b4a4a;
     stroke: #aaa;
     stroke-width: 2px;
 }
