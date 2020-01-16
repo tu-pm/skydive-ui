@@ -691,19 +691,19 @@ export class Topology extends React.Component<Props, {}> {
     }
 
     highlightPath(nodes: Array<Node | undefined>, linkTag: string, linkMetadata: any) {
-
         // Highlight nodes
         nodes.forEach(node => {
             if (!node) {
                 return
             }
+            node.sortFirst = true
+            // if (this.nodeGroup.get(node.id)) {
+            //     node.sortFirst = true
+            // }
             // Make sure that node is visible
             this.showNode(node)
             // Highlight that node
             node.highlighted = true
-            if (this.nodeGroup.get(node.id)) {
-                node.sortFirst = true
-            }
             this.highlightedNodes.push(node)
         })
         this.renderTree()
@@ -2140,7 +2140,7 @@ export class Topology extends React.Component<Props, {}> {
 
         const isGroup = (d: D3Node) => d.data.type === WrapperType.Group
         const layerSize = (padding: number) => (d: D3Node) => (
-            isGroup(d) ? (10 + 2 * padding) : (30 + 2 * padding)
+            isGroup(d) ? (14 + 2 * padding) : (30 + 2 * padding)
         )
 
         const layerClass = (className: string) => (d: D3Node) => (
@@ -2336,13 +2336,13 @@ export class Topology extends React.Component<Props, {}> {
             .attr("x", layerSize(5))
             .attr("y", layerSize(3))
             .text((d: D3Node) => num(d.data))
-        
+
         exco.append("text")
             .filter((d: D3Node) => d.data.type === WrapperType.Group)
             .attr("id", (d: D3Node) => "exco-" + d.data.id)
             .attr("class", "node-exco-children")
-            .attr("x", layerSize(-5))
-            .attr("y", layerSize(0))
+            .attr("x", layerSize(-7))
+            .attr("y", layerSize(-2))
             .style("font-size", "2em")
             .text((d: D3Node) => num(d.data))
 
