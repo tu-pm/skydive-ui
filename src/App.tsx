@@ -930,10 +930,10 @@ class App extends React.Component<Props, State> {
                 ))}
               </Container>
             }
-            {this.state.linkTagStates.size !== 0 &&
-              <Container className={classes.linkTagsPanel}>
-                <Grid container spacing={2}>
-                  <Grid item xs={5}>
+            <Container className={classes.linkTagsPanel}>
+              <Grid container spacing={2}>
+                {this.state.linkTagStates &&
+                  <Grid item>
                     <Paper className={classes.linkTagsPanelPaper}>
                       <Typography component="h6" gutterBottom>
                         Link types
@@ -950,19 +950,19 @@ class App extends React.Component<Props, State> {
                           ))}
                       </FormGroup>
                     </Paper>
-                  </Grid>
-                  <Grid item xs={7}>
-                    {this.tc && <IpPathTracing
+                  </Grid>}
+                {this.tc && this.tc.nodeTagStates.get("infrastructure") === true &&
+                  <Grid item>
+                    <IpPathTracing
                       tracePath={this.tc.tracePath.bind(this.tc)}
                       clearPath={this.tc.clearHighlightedPath.bind(this.tc)}
-                    />}
-                  </Grid>
-                </Grid>
-              </Container>
-            }
+                    />
+                  </Grid>}
+              </Grid>
+            </Container>
           </main>
         </div>
-      </ThemeProvider>
+      </ThemeProvider >
     )
   }
 }

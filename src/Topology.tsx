@@ -1090,7 +1090,7 @@ export class Topology extends React.Component<Props, {}> {
             }
         })
 
-        // this.props.onLinkTagChange(tags)
+        this.props.onLinkTagChange(tags)
 
         // set the cache
         this.visibleLinksCache = links
