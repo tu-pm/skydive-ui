@@ -47,6 +47,13 @@ class IpPathTracing extends React.Component<Props, State> {
         })
     }
 
+    submit = (e) => {
+        if (e.key === 'Enter') {
+            this.handleSearch()
+            e.preventDefault()
+        }
+    }
+
     render() {
         const { classes } = this.props
 
@@ -62,6 +69,7 @@ class IpPathTracing extends React.Component<Props, State> {
                     variant="outlined"
                     value={this.state.srcIP}
                     onChange={this.handleChange}
+                    onKeyPress={this.submit}
                 />
                 <TextField
                     label="Destination IP"
@@ -70,6 +78,7 @@ class IpPathTracing extends React.Component<Props, State> {
                     variant="outlined"
                     value={this.state.destIP}
                     onChange={this.handleChange}
+                    onKeyPress={this.submit}
                 />
                 <Grid container className={classes.formButton} direction="row" justify="flex-end" spacing={2}>
                     <Grid item>

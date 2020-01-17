@@ -683,8 +683,8 @@ export class Topology extends React.Component<Props, {}> {
             node.sortFirst = false
         })
         this.highlightedNodes = []
-        this.highlightedLinks.forEach(linkID => {
-            this.delLink(linkID)
+        this.highlightedLinks.forEach(link => {
+            this.delLink(link)
         })
         this.highlightedLinks = []
         this.renderTree()
@@ -720,10 +720,10 @@ export class Topology extends React.Component<Props, {}> {
                     new Array<string>(linkTag),
                     linkMetadata
                 )
-                this.linkTagStates.set(linkTag, LinkTagState.Visible)
                 this.highlightedLinks.push(linkID)
             }
         })
+        this.linkTagStates.set(linkTag, LinkTagState.Visible)
         this.renderTree()
     }
 
@@ -768,7 +768,7 @@ export class Topology extends React.Component<Props, {}> {
             // remove tags if needed
             link.tags.forEach(tag => {
                 var count = this.linkTagCount.get(tag) || 0
-                if (!count) {
+                if (count < 2) {
                     this.linkTagCount.delete(tag)
                     this.linkTagStates.delete(tag)
                 } else {

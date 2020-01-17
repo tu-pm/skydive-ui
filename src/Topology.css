@@ -30,7 +30,7 @@ svg {
 .link-overlays {
     fill: none;
     stroke: #ffeb3b;
-    stroke-width: 20;
+    stroke-width: 10;
     marker-start: url(#link-overlay-marker);
     marker-end: url(#link-overlay-marker);
 }
