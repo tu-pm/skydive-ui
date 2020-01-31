@@ -7,9 +7,8 @@ svg {
 }
 
 .level-zone {
-    stroke: rgb(255, 255, 255);
-    stroke-dasharray: 5, 10;
-    fill: #303030;
+    stroke: rgb(102, 102, 102);
+    stroke-dasharray: 10, 20;
 }
 
 .level-label rect {
