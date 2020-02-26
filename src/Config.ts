@@ -313,21 +313,18 @@ var DefaultConfig = {
         }
     },
     nodeSortFnc: function (a: Node, b: Node) {
-        if (a.sortFirst && !b.sortFirst) {
-            return -1
+        // First, sort by preference
+        var res = b.priority - a.priority
+        // Then sort by state
+        if (res == 0 && a.data.State && b.data.State) {
+            res = (a.data.State === "UP" && b.data.State === "DOWN") ? -1
+                : (a.data.State === "DOWN" && b.data.State === "UP") ? 1 : 0
         }
-        if (!a.sortFirst && b.sortFirst) {
-            return 1
+        // Fallback to sort by name
+        if (res == 0) {
+            res = a.data.Name.localeCompare(b.data.Name)
         }
-        if (a.data.State && b.data.State) {
-            if (a.data.State === "UP" && b.data.State === "DOWN") {
-                return -1
-            }
-            if (a.data.State === "DOWN" && b.data.State === "UP") {
-                return 1
-            }
-        }
-        return a.data.Name.localeCompare(b.data.Name)
+        return res
     },
     nodeClicked: function (node: Node) {
         window.App.tc.selectNode(node.id)

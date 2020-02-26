@@ -56,8 +56,8 @@ module.exports = {
     devServer: {
         historyApiFallback: true,
         proxy: {
-            '/api': {
-                target: 'http://' + process.env.API_HOST + ':' + process.env.API_PORT,
+            '/api/*': {
+                target: 'http://10.60.17.243:8304'
             }
         }
     },

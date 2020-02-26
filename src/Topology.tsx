@@ -56,7 +56,7 @@ export class Node {
     revision: number
     type: 'node'
     highlighted: boolean
-    sortFirst: boolean
+    priority: number
 
     constructor(id: string, tags: Array<string>, data: any, state: NodeState, weight: number | ((node: Node) => number)) {
         this.id = id
@@ -67,7 +67,7 @@ export class Node {
         this.state = state
         this.type = 'node'
         this.highlighted = false
-        this.sortFirst = false
+        this.priority = 0
     }
 
     getWeight(): number {
@@ -586,146 +586,48 @@ export class Topology extends React.Component<Props, {}> {
         this.invalidated = true
     }
 
-    getNodeFromIPv4(ipAddr: string): Node | undefined {
-        for (let node of this.nodes.values()) {
-            if (node.data.Neutron && node.data.Neutron.IPV4) {
-                for (let addr of node.data.Neutron.IPV4) {
-                    if (addr.split("/")[0] === ipAddr) {
-                        return node
-                    }
-                }
-            }
-        }
-    }
-
-    getNeighborByType(node: Node, type: string): Node | undefined {
-        for (let link of this.links.values()) {
-            if (link.source === node && link.target.data.Type && link.target.data.Type === type) {
-                return link.target
-            }
-            if (link.target === node && link.source.data.Type && link.source.data.Type === type) {
-                return link.source
-            }
-        }
-    }
-
     tracePath(srcAddr: string, destAddr: string) {
         this.clearHighlightedPath()
+        fetch(`/api/tungstenfabric/?src-ip=${srcAddr}&dest-ip=${destAddr}`)
+            .then(resp => resp.json())
+            .then((edges: Array<any>) => {
+                edges.forEach((edge, index) => {
+                    const linkID = uuid()
+                    var parent = this.nodes.get(edge.Parent)
+                    var child = this.nodes.get(edge.Child)
+                    if (parent && child) {
+                        this.addLink(linkID, parent, child, new Array<string>("overlay-flow"), edge.Metadata)
+                        this.highlightedLinks.push(linkID)
 
-        var path = this.getPathNodes(srcAddr, destAddr)
-        if (path.nodes.length === 0) {
-            alert("No path found")
-            return
-        }
-        var linkMetadata = {
-            SourceIP: srcAddr,
-            DestinationIP: destAddr,
-            ...path.tunnel,
-        }
-        this.highlightPath(path.nodes, "tunnel", linkMetadata)
+                        parent.priority = edges.length - index + 1
+                        this.showNode(parent)
+                        this.highlightedNodes.push(parent)
 
-    }
-
-    getPathNodes(srcAddr: string, destAddr: string): { nodes: Array<Node | undefined>, tunnel: any } {
-        var path = {
-            nodes: new Array<Node | undefined>(),
-            tunnel: undefined,
-        }
-
-        var srcTap = this.getNodeFromIPv4(srcAddr)
-        if (!srcTap) {
-            return path
-        }
-        var destTap = this.getNodeFromIPv4(destAddr)
-        if (!destTap) {
-            return path
-        }
-        var srcVhost = this.getNeighborByType(srcTap, "vhost")
-        if (!srcVhost) {
-            return path
-        }
-        var destVhost = this.getNeighborByType(destTap, "vhost")
-        if (!destVhost) {
-            return path
-        }
-        var srcVM = this.getNeighborByType(srcTap, "libvirt")
-        var destVM = this.getNeighborByType(destTap, "libvirt")
-
-        // List of nodes that will be highlighted
-        if (srcVhost === destVhost) {
-            path.nodes = [srcVM, srcTap, srcVhost, destTap, destVM]
-        } else {
-            // Check if there's a route from source vhost to dest vhost with ip dest prefix
-            if (srcVhost.data.Tunnels && destVhost.data.IPV4) {
-                let destIPs = destVhost.data.IPV4.map((ip: string) => ip.split("/")[0])
-                var hasRoute = false
-                for (let tunnel of srcVhost.data.Tunnels) {
-                    if (destIPs.includes(tunnel.DestinationIP)
-                        && destAddr === tunnel.Prefix.split("/")[0]) {
-                        path.tunnel = tunnel
-                        hasRoute = true
-                        break
+                        if (index == edges.length - 1) {
+                            child.priority = parent.priority - 1
+                            this.showNode(child)
+                            this.highlightedNodes.push(child)
+                        }
                     }
-                }
-                if (hasRoute) {
-                    var srcHost = srcTap.parent
-                    var destHost = destTap.parent
-                    path.nodes = [srcVM, srcTap, srcVhost, srcHost, destHost, destVhost, destTap, destVM]
-                }
-            }
-        }
-        return path
+                })
+                this.linkTagStates.set("overlay-flow", LinkTagState.Visible)
+            })
     }
 
     clearHighlightedPath() {
         this.highlightedNodes.forEach(node => {
             node.highlighted = false
-            node.sortFirst = false
+            node.priority = 0
         })
-        this.highlightedNodes = []
         this.highlightedLinks.forEach(link => {
             this.delLink(link)
         })
+        this.highlightedNodes = []
         this.highlightedLinks = []
         this.renderTree()
     }
 
-    highlightPath(nodes: Array<Node | undefined>, linkTag: string, linkMetadata: any) {
-        // Highlight nodes
-        nodes.forEach(node => {
-            if (!node) {
-                return
-            }
-            node.sortFirst = true
-            // if (this.nodeGroup.get(node.id)) {
-            //     node.sortFirst = true
-            // }
-            // Make sure that node is visible
-            this.showNode(node)
-            // Highlight that node
-            node.highlighted = true
-            this.highlightedNodes.push(node)
-        })
-        this.renderTree()
 
-        // Highlight links
-        nodes.forEach((node, index) => {
-            var nextNode = nodes[index + 1]
-            if (node && nextNode) {
-                const linkID: string = uuid()
-                this.addLink(
-                    linkID,
-                    node,
-                    nextNode,
-                    new Array<string>(linkTag),
-                    linkMetadata
-                )
-                this.highlightedLinks.push(linkID)
-            }
-        })
-        this.linkTagStates.set(linkTag, LinkTagState.Visible)
-        this.renderTree()
-    }
 
     addLink(id: string, node1: Node, node2: Node, tags: Array<string>, data: any) {
         this.links.set(id, new Link(id, tags, node1, node2, data, { selected: false }))
@@ -853,13 +755,11 @@ export class Topology extends React.Component<Props, {}> {
                     if (wrapper.wrapped.state.groupFullSize) {
                         children = children.concat(wrapper.children)
                     } else {
-                        // Push child nodes with sortFirst = true to first in group
-                        var n = 0
-                        while (wrapper.children[n].wrapped.sortFirst) {
-                            n += 1
-                        }
-                        if (n > 0) {
-                            children = children.concat(wrapper.children.slice(0, n))
+                        const prioritized = wrapper.children.filter(nw => nw.wrapped.priority > 0).length
+                        if (prioritized > 0) {
+                            children = children.concat(
+                                wrapper.children.splice(0, prioritized)
+                            )
                         } else {
                             children = children.concat(
                                 wrapper.children.splice(wrapper.wrapped.state.groupOffset, this.props.groupSize || defaultGroupSize)
