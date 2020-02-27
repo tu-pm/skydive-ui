@@ -588,9 +588,12 @@ export class Topology extends React.Component<Props, {}> {
 
     tracePath(srcAddr: string, destAddr: string) {
         this.clearHighlightedPath()
-        fetch(`/api/tungstenfabric/?src-ip=${srcAddr}&dest-ip=${destAddr}`)
+        return fetch(`/api/tungstenfabric/?src-ip=${srcAddr}&dest-ip=${destAddr}`)
             .then(resp => resp.json())
             .then((edges: Array<any>) => {
+                if (edges.length == 0) {
+                    alert("No path found.")
+                }
                 edges.forEach((edge, index) => {
                     const linkID = uuid()
                     var parent = this.nodes.get(edge.Parent)

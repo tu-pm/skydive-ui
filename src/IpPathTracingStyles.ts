@@ -11,5 +11,11 @@ export const styles = (theme: Theme) => createStyles({
     },
     formButton: {
         marginTop: theme.spacing(1)
-    }
+    },
+    buttonProgress: {
+        color: 'white',
+        position: 'absolute',
+        marginLeft: -45,
+        marginTop: 7,
+    },
 })

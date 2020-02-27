@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Paper, Typography, Button, Grid, TextField } from "@material-ui/core"
+import { Paper, Typography, Button, Grid, TextField, CircularProgress } from "@material-ui/core"
 import { styles } from './IpPathTracingStyles'
 import { withStyles } from '@material-ui/core/styles'
 
@@ -12,6 +12,7 @@ interface Props {
 interface State {
     srcIP: string
     destIP: string
+    loading: boolean
 }
 
 class IpPathTracing extends React.Component<Props, State> {
@@ -22,6 +23,7 @@ class IpPathTracing extends React.Component<Props, State> {
         this.state = {
             srcIP: "",
             destIP: "",
+            loading: false,
         }
     }
 
@@ -36,7 +38,12 @@ class IpPathTracing extends React.Component<Props, State> {
     }
 
     handleSearch = () => {
-        this.props.tracePath(this.state.srcIP, this.state.destIP)
+        this.setState({ loading: true })
+        var wait = async () => {
+            await this.props.tracePath(this.state.srcIP, this.state.destIP)
+            this.setState({ loading: false })
+        }
+        wait()
     }
 
     handleClear = () => {
@@ -82,12 +89,13 @@ class IpPathTracing extends React.Component<Props, State> {
                 />
                 <Grid container className={classes.formButton} direction="row" justify="flex-end" spacing={2}>
                     <Grid item>
-                        <Button variant="contained" color="primary" onClick={this.handleSearch}>
+                        <Button variant="contained" color="primary" onClick={this.handleSearch} disabled={this.state.loading}>
                             Find
                         </Button>
+                        {this.state.loading && <CircularProgress size={24} className={classes.buttonProgress} />}
                     </Grid>
                     <Grid item>
-                        <Button variant="contained" color="primary" onClick={this.handleClear}>
+                        <Button variant="contained" color="primary" onClick={this.handleClear} disabled={this.state.loading}>
                             Clear
                         </Button>
                     </Grid>
