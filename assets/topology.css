@@ -45,11 +45,3 @@
 .snmp-down .node-icon {
   fill: #eee;
 }
-
-.highlighted .node-hexagon{
-  fill: #ffeb3b
-}
-
-.highlighted .links {
-  stroke: #ffeb3b;
-}

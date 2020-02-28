@@ -4,7 +4,7 @@ import { styles } from './IpPathTracingStyles'
 import { withStyles } from '@material-ui/core/styles'
 
 interface Props {
-    tracePath: (srcIP: string, destIP: string) => void
+    tracePath: (srcIP: string, destIP: string) => Promise<boolean>
     clearPath: () => void
     classes: any
 }
@@ -39,11 +39,14 @@ class IpPathTracing extends React.Component<Props, State> {
 
     handleSearch = () => {
         this.setState({ loading: true })
-        var wait = async () => {
-            await this.props.tracePath(this.state.srcIP, this.state.destIP)
-            this.setState({ loading: false })
-        }
-        wait()
+        this.props.tracePath(this.state.srcIP, this.state.destIP)
+            .then(success => {
+                console.log(123)
+                this.setState({ loading: false })
+                if (!success) {
+                    alert("No path found")
+                }
+            })
     }
 
     handleClear = () => {

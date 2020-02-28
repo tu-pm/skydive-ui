@@ -55,7 +55,6 @@ export class Node {
     parent: Node | undefined
     revision: number
     type: 'node'
-    highlighted: boolean
     priority: number
 
     constructor(id: string, tags: Array<string>, data: any, state: NodeState, weight: number | ((node: Node) => number)) {
@@ -66,7 +65,6 @@ export class Node {
         this.children = new Array<Node>()
         this.state = state
         this.type = 'node'
-        this.highlighted = false
         this.priority = 0
     }
 
@@ -586,20 +584,20 @@ export class Topology extends React.Component<Props, {}> {
         this.invalidated = true
     }
 
-    tracePath(srcAddr: string, destAddr: string) {
+    tracePath(srcAddr: string, destAddr: string): Promise<boolean> {
         this.clearHighlightedPath()
         return fetch(`/api/tungstenfabric/?src-ip=${srcAddr}&dest-ip=${destAddr}`)
-            .then(resp => resp.json())
+            .then(resp => { console.log(resp.headers.get("Content-Type")); return resp.json() })
             .then((edges: Array<any>) => {
                 if (edges.length == 0) {
-                    alert("No path found.")
+                    return false
                 }
                 edges.forEach((edge, index) => {
                     const linkID = uuid()
                     var parent = this.nodes.get(edge.Parent)
                     var child = this.nodes.get(edge.Child)
                     if (parent && child) {
-                        this.addLink(linkID, parent, child, new Array<string>("overlay-flow"), edge.Metadata)
+                        this.addLink(linkID, parent, child, Array<string>("overlay-flow"), edge.Metadata)
                         this.highlightedLinks.push(linkID)
 
                         parent.priority = edges.length - index + 1
@@ -614,12 +612,13 @@ export class Topology extends React.Component<Props, {}> {
                     }
                 })
                 this.linkTagStates.set("overlay-flow", LinkTagState.Visible)
+                return true
             })
     }
 
     clearHighlightedPath() {
+        this.unselectAllLinks()
         this.highlightedNodes.forEach(node => {
-            node.highlighted = false
             node.priority = 0
         })
         this.highlightedLinks.forEach(link => {
