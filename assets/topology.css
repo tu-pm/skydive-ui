@@ -14,8 +14,12 @@
   fill: #88D498;
 }
 
-.down .node-hexagon {
+.node-down .node-hexagon {
   fill: rgb(163, 0, 0);
+}
+
+.node-inaccessible .node-hexagon {
+  fill: rgba(223, 196, 80, 0.863);
 }
 
 .host .node-icon {
@@ -34,7 +38,11 @@
   fill: #444;
 }
 
-.down .node-icon {
+.node-down .node-icon {
+  fill: #eee;
+}
+
+.node-inaccessible .node-icon {
   fill: #eee;
 }
 

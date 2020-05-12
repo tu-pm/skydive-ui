@@ -21,6 +21,8 @@ import Websocket from 'react-websocket'
 import { debounce } from 'throttle-debounce'
 
 import { withStyles } from '@material-ui/core/styles'
+import { ThemeProvider } from "@material-ui/styles"
+import { createMuiTheme } from "@material-ui/core"
 import CssBaseline from '@material-ui/core/CssBaseline'
 import Drawer from '@material-ui/core/Drawer'
 import AppBar from '@material-ui/core/AppBar'
@@ -106,6 +108,12 @@ interface State {
   isSelectionOpen: boolean
   wsContext: WSContext
 }
+
+const darkTheme = createMuiTheme({
+  palette: {
+    type: "dark"
+  }
+})
 
 class App extends React.Component<Props, State> {
 
@@ -421,14 +429,18 @@ class App extends React.Component<Props, State> {
   nodeAttrs(node: Node): NodeAttrs {
     var attrs = this.props.config.nodeAttrs(node)
     if (node.data.State) {
-      attrs.classes.push(node.data.State.toLowerCase())
+      attrs.classes.push("node-" + node.data.State.toLowerCase())
     }
 
     return attrs
   }
 
   linkAttrs(link: Link): LinkAttrs {
-    return this.props.config.linkAttrs(link)
+    var attrs = this.props.config.linkAttrs(link)
+    if (link.data.State) {
+      attrs.classes.push("link-" + link.data.State.toLowerCase())
+    }
+    return attrs
   }
 
   onNodeSelected(node: Node, active: boolean) {
@@ -797,26 +809,27 @@ class App extends React.Component<Props, State> {
     const { classes } = this.props
 
     return (
-      <div className={classes.app}>
-        <CssBaseline />
-        {this.staticDataURL === "" &&
-          <Websocket ref={node => this.websocket = node} url={this.subscriberURL()} onOpen={this.onWebSocketOpen.bind(this)}
-            onMessage={this.onWebSocketMessage.bind(this)} onClose={this.onWebSocketClose.bind(this)}
-            reconnectIntervalInMilliSeconds={2500} />
-        }
-        <AppBar position="absolute" className={clsx(classes.appBar, this.state.isNavOpen && classes.appBarShift)}>
-          <Toolbar className={classes.toolbar}>
-            <IconButton
-                edge="start"
-                color="inherit"
-                aria-label="open drawer"
-                onClick={this.openDrawer.bind(this)}
-                className={clsx(classes.menuButton, this.state.isNavOpen && classes.menuButtonHidden)}>
-                <MenuIcon />
-              </IconButton>
-              <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-                <img src={Logo} alt="logo" />
-              </Typography>
+      <ThemeProvider theme={darkTheme}>
+        <div className={classes.app}>
+          <CssBaseline />
+          {this.staticDataURL === "" &&
+            <Websocket ref={node => this.websocket = node} url={this.subscriberURL()} onOpen={this.onWebSocketOpen.bind(this)}
+              onMessage={this.onWebSocketMessage.bind(this)} onClose={this.onWebSocketClose.bind(this)}
+              reconnectIntervalInMilliSeconds={2500} />
+          }
+          <AppBar position="absolute" className={clsx(classes.appBar, this.state.isNavOpen && classes.appBarShift)}>
+            <Toolbar className={classes.toolbar}>
+              <IconButton
+                  edge="start"
+                  color="inherit"
+                  aria-label="open drawer"
+                  onClick={this.openDrawer.bind(this)}
+                  className={clsx(classes.menuButton, this.state.isNavOpen && classes.menuButtonHidden)}>
+                  <MenuIcon />
+                </IconButton>
+                <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
+                  <img src={Logo} alt="logo" />
+                </Typography>
               {this.props.config.subTitle &&
                 <Typography className={classes.subTitle} variant="caption">{this.props.config.subTitle}</Typography>
               }
@@ -906,7 +919,7 @@ class App extends React.Component<Props, State> {
             <List>{mainListItems}</List>
             <Divider />
             <List>{helpListItems}</List>
-            </Drawer>
+          </Drawer>
           <main className={classes.content}>
             <Container maxWidth="xl" className={classes.container}>
               <Topology className={classes.topology} ref={node => this.tc = node} nodeAttrs={this.nodeAttrs.bind(this)} linkAttrs={this.linkAttrs.bind(this)}
@@ -991,6 +1004,7 @@ class App extends React.Component<Props, State> {
             </Container>
           </main>
         </div>
+      </ThemeProvider >
     )
   }
 }
