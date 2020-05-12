@@ -7,9 +7,8 @@ svg {
 }
 
 .level-zone {
-    stroke: #000;
-    stroke-dasharray: 5, 10;
-    fill: #f6f6f6;
+    stroke: rgb(102, 102, 102);
+    stroke-dasharray: 10, 20;
 }
 
 .level-label rect {
@@ -23,14 +22,14 @@ svg {
 
 .hiera-links {
     fill: none;
-    stroke: #333;
+    stroke: rgb(255, 255, 255);
     stroke-width: 2;
 }
 
 .link-overlays {
     fill: none;
     stroke: #ffeb3b;
-    stroke-width: 20;
+    stroke-width: 10;
     marker-start: url(#link-overlay-marker);
     marker-end: url(#link-overlay-marker);
 }
@@ -51,7 +50,7 @@ svg {
 
 .links {
     fill: none;
-    stroke: #0069bd;
+    stroke: #16e1fc;
     stroke-width: 3;
     marker-start: url(#link-marker);
     marker-end: url(#link-marker);
@@ -94,12 +93,26 @@ svg {
     stroke: #5097c7;
 }
 
+.node-circle-group {
+    fill: #48e448;
+    stroke-width: 3;
+    stroke: #80aac5;
+}
+
 .node-overlay {
     fill: #ffeb3b;
 }
 
+.node-overlay-group {
+    fill: #fff9c3;
+}
+
 .node-pinned {
     fill: rgb(55, 255, 37);
+}
+
+.node-pinned-group {
+    fill: rgb(173, 251, 166);
 }
 
 .node-disc {
@@ -107,14 +120,29 @@ svg {
     fill: #5097c7;
 }
 
+.node-disc-group {
+    stroke: none;
+    fill: #92afc2;
+}
+
 .node-selected .node-circle {
     fill: #5097c7;
+}
+
+.node-selected .node-circle-group {
+    fill: #97b2c3;
 }
 
 .node-hexagon {
     stroke: #455f6b;
     stroke-dasharray: 5, 5;
     fill: #C9ADA7;
+}
+
+.node-hexagon-group {
+    stroke: #8e999e;
+    stroke-dasharray: 5, 5;
+    fill: rgb(226, 218, 217);
 }
 
 .node-icon {
@@ -170,7 +198,7 @@ svg {
 
 .node-exco-children {
     font-size: 16px;
-    fill: #fff;
+    fill: rgb(0, 0, 0);
     text-anchor: middle;
     font-weight: bold;
     font-family: sans-serif;
@@ -183,13 +211,13 @@ svg {
 }
 
 .group .curly-brace-bg {
-    fill: #e0e0e0;
+    fill: #424242;
     stroke: #ddd;
     stroke-width: 2px;
 }
 
 .group .curly-brace-owner-bg {
-    fill: #cac9c9;
+    fill: #4b4a4a;
     stroke: #aaa;
     stroke-width: 2px;
 }
@@ -227,4 +255,8 @@ svg {
 
 .context-menu-item text.disabled {
     fill: #888;
+}
+
+.node-group {
+    fill: lightsalmon;
 }

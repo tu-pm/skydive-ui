@@ -33,6 +33,9 @@ var DefaultConfig = {
     defaultFilter: 'default',
     _newAttrs: function (node: Node): NodeAttrs {
         var name = node.data.Name
+        if (node.data.Nova) {
+            name = node.data.Nova.Name
+        }
         if (name.length > 24) {
             name = node.data.Name.substring(0, 24) + "."
         }
@@ -158,6 +161,7 @@ var DefaultConfig = {
                 break
             case "switch":
                 attrs.icon = "\uf6ff"
+                attrs.weight = WEIGHT_FABRIC
                 break
             case "bridge":
             case "ovsbridge":
@@ -236,8 +240,39 @@ var DefaultConfig = {
                 return this._nodeAttrsInfra(node)
         }
     },
+    nodePriorityByState: function(node: Node): Number {
+        var res: Number
+        if (!node.data.State) {
+            res = 0
+            return res
+        }
+        switch (node.data.State) {
+            case "UP":
+                res = 1
+                break
+            case "INACCESSIBLE":
+                res = 2
+                break
+            case "DOWN":
+                res = 3
+                break
+            default:
+                res = 0
+        }
+        return res
+    },
     nodeSortFnc: function (a: Node, b: Node) {
-        return a.data.Name.localeCompare(b.data.Name)
+        // First, sort by preference
+        var res = b.priority - a.priority
+        // Then sort by state
+        if (res == 0 && a.data.State && b.data.State) {
+            res = this.nodePriorityByState(a) - this.nodePriorityByState(b)
+        }
+        // Fallback to sort by name
+        if (res == 0) {
+            res = a.data.Name.localeCompare(b.data.Name)
+        }
+        return res
     },
     nodeClicked: function (node: Node) {
         window.App.tc.selectNode(node.id)
@@ -356,10 +391,50 @@ var DefaultConfig = {
                 switch (data.Type) {
                     case "host":
                         return ['Name']
+                    case "switch":
+                        return ['Name', 'Type', 'State']
+                    case "switchport":
+                        return ['Name', 'Type', 'MTU', 'Speed', 'State']
                     default:
                         return ['Name', 'Type', 'MAC', 'Driver', 'State']
                 }
             }
+        },
+        {
+            field: "LLDP",
+            title: "LLDP Information",
+            expanded: false,
+            icon: "\uf05a"
+        },
+        {
+            field: "Contrail",
+            title: "TF Metadata",
+            expanded: false,
+            icon: "\uf05a"
+        },
+        {
+            field: "Contrail.RoutingTable",
+            title: "TF Routing Table",
+            expanded: false,
+            icon: "\uf05a"
+        },
+        {
+            field: "Neutron",
+            title: "Neutron",
+            expanded: false,
+            icon: "\uf05a"
+        },
+        {
+            field: "Neutron.IPV4",
+            title: "IPV4",
+            expanded: false,
+            icon: "\uf1fa"
+        },
+        {
+            field: "Nova",
+            title: "Nova",
+            expanded: false,
+            icon: "\uf109"
         },
         {
             field: "Sockets",
@@ -439,6 +514,69 @@ var DefaultConfig = {
                     TxPackets: data.TxPackets ? data.TxPackets.toLocaleString() : 0,
                     TxBytes: data.TxPackets ? Tools.prettyBytes(data.TxBytes) : 0,
                     Last: data.Last ? new Date(data.Last).toLocaleString() : 0
+                }
+            }
+        },
+        {
+            field: "LastUpdateChassisIfMetric",
+            title: "Last metrics",
+            expanded: false,
+            icon: "\uf201",
+            normalizer: function (data) {
+                return {
+                    IfInOctets: data.IfInOctets ? data.IfInOctets.toLocaleString() : 0,
+                    IfInUcastPkts: data.IfInUcastPkts ? data.IfInUcastPkts.toLocaleString() : 0,
+                    IfOutOctets: data.IfOutOctets ? data.IfOutOctets.toLocaleString() : 0,
+                    IfOutUcastPkts: data.IfOutUcastPkts ? data.IfOutUcastPkts.toLocaleString() : 0,
+                    Start: data.Start ? new Date(data.Start).toLocaleString() : 0,
+                    Last: data.Last ? new Date(data.Last).toLocaleString() : 0,
+                    // IfInMulticastPkts: data.IfInMulticastPkts ? data.IfInMulticastPkts.toLocaleString() : 0,
+                    // IfInBroadcastPkts: data.IfInBroadcastPkts ? data.IfInBroadcastPkts.toLocaleString() : 0,
+                    // IfInDiscards: data.IfInDiscards ? data.IfInDiscards.toLocaleString() : 0,
+                    // IfInErrors: data.IfInErrors ? data.IfInErrors.toLocaleString() : 0,
+                    // IfInUnknownProtos: data.IfInUnknownProtos ? data.IfInUnknownProtos.toLocaleString() : 0,
+                    // IfOutMulticastPkts: data.IfOutMulticastPkts ? data.IfOutMulticastPkts.toLocaleString() : 0,
+                    // IfOutBroadcastPkts: data.IfOutBroadcastPkts ? data.IfOutBroadcastPkts.toLocaleString() : 0,
+                    // IfOutDiscards: data.IfOutDiscards ? data.IfOutDiscards.toLocaleString() : 0,
+                    // IfOutErrors: data.IfOutErrors ? data.IfOutErrors.toLocaleString() : 0,
+                }
+            },
+            graph: function (data) {
+                return {
+                    type: "LineChart",
+                    data: [
+                        [
+                            { type: "datetime", label: "time" },
+                            "IfInOctets",
+                            "IfOutOctets"
+                        ],
+                        [new Date(data.Last || 0), data.IfInOctets || 0, data.IfOutOctets || 0]
+                    ]
+                }
+            }
+        },
+        {
+            field: "ChassisIfMetric",
+            title: "Total metrics",
+            expanded: false,
+            icon: "\uf201",
+            normalizer: function (data) {
+                return {
+                    IfInOctets: data.IfInOctets ? data.IfInOctets.toLocaleString() : 0,
+                    IfInUcastPkts: data.IfInUcastPkts ? data.IfInUcastPkts.toLocaleString() : 0,
+                    IfOutOctets: data.IfOutOctets ? data.IfOutOctets.toLocaleString() : 0,
+                    IfOutUcastPkts: data.IfOutUcastPkts ? data.IfOutUcastPkts.toLocaleString() : 0,
+                    Start: data.Start ? new Date(data.Start).toLocaleString() : 0,
+                    Last: data.Last ? new Date(data.Last).toLocaleString() : 0,
+                    // IfInMulticastPkts: data.IfInMulticastPkts ? data.IfInMulticastPkts.toLocaleString() : 0,
+                    // IfInBroadcastPkts: data.IfInBroadcastPkts ? data.IfInBroadcastPkts.toLocaleString() : 0,
+                    // IfInDiscards: data.IfInDiscards ? data.IfInDiscards.toLocaleString() : 0,
+                    // IfInErrors: data.IfInErrors ? data.IfInErrors.toLocaleString() : 0,
+                    // IfInUnknownProtos: data.IfInUnknownProtos ? data.IfInUnknownProtos.toLocaleString() : 0,
+                    // IfOutMulticastPkts: data.IfOutMulticastPkts ? data.IfOutMulticastPkts.toLocaleString() : 0,
+                    // IfOutBroadcastPkts: data.IfOutBroadcastPkts ? data.IfOutBroadcastPkts.toLocaleString() : 0,
+                    // IfOutDiscards: data.IfOutDiscards ? data.IfOutDiscards.toLocaleString() : 0,
+                    // IfOutErrors: data.IfOutErrors ? data.IfOutErrors.toLocaleString() : 0,
                 }
             }
         },
