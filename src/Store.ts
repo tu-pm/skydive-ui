@@ -115,8 +115,13 @@ export function setConfig(config: typeof DefaultConfig): setConfigAction {
 
 export type ActionTypes = selectElementAction | unselectElementAction | bumpRevisionAction | openSessionAction | closeSessionAction | setConfigAction
 
+var endpoint = `${window.location.protocol}//${window.location.hostname}`
+if (window.location.port) {
+    endpoint += `:${window.location.port}`
+}
+
 const emptySession = {
-    endpoint: `${window.location.protocol}//${window.location.hostname}:8082`,
+    endpoint: endpoint,
     username: "",
     token: "",
     permissions: {},

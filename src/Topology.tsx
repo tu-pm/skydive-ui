@@ -24,6 +24,8 @@ import { zoom, zoomIdentity } from 'd3-zoom'
 import ResizeObserver from 'react-resize-observer'
 
 import './Topology.css'
+import { v4 as uuid } from "uuid"
+import { stringify } from "query-string"
 
 const animDuration = 500
 const defaultGroupSize = 4
@@ -49,9 +51,10 @@ export class Node {
     weight: number | ((node: Node) => number)
     children: Array<Node>
     state: NodeState
-    parent: Node | null
+    parent: Node | undefined
     revision: number
     type: 'node'
+    priority: number
 
     constructor(id: string, tags: Array<string>, data: any, state: NodeState, weight: number | ((node: Node) => number)) {
         this.id = id
@@ -61,6 +64,7 @@ export class Node {
         this.children = new Array<Node>()
         this.state = state
         this.type = 'node'
+        this.priority = 0
     }
 
     getWeight(): number {
@@ -223,6 +227,8 @@ export class Topology extends React.Component<Props, {}> {
     private groupStates: Map<string, NodeState>
     private nodeGroup: Map<string, NodeWrapper>
     private weights: Array<number>
+    private highlightedNodes: Array<Node>
+    private highlightedLinks: Array<string>
     private visibleLinksCache: Array<Link> | undefined
 
     root: Node
@@ -236,7 +242,9 @@ export class Topology extends React.Component<Props, {}> {
         super(props)
 
         this.nodeWidth = 150
-        this.nodeHeight = 280
+        this.nodeHeight = 260
+        this.highlightedNodes = []
+        this.highlightedLinks = []
 
         if (this.props.weightTitles) {
             this.weightTitles = this.props.weightTitles
@@ -585,6 +593,67 @@ export class Topology extends React.Component<Props, {}> {
         this.invalidated = true
     }
 
+    tracePath(srcAddr: string, destAddr: string): Promise<boolean> {
+        this.clearHighlightedPath()
+        var qs = stringify({
+            srcIP: srcAddr,
+            destIP: destAddr
+        })
+        var url = `/api/tungstenfabric?${qs}`
+        console.log(url)
+        return fetch(`/api/tungstenfabric?${qs}`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+            .then(resp => {
+                if (resp.status === 200) {
+                    return resp.json()
+                }
+                return resp.text().then(data => {throw new Error(data)})
+            })
+            .then((edges: Array<any>) => {
+                console.log(edges)
+                if (edges.length == 0) {
+                    return false
+                }
+                edges.forEach((edge, index) => {
+                    const linkID = uuid()
+                    var parent = this.nodes.get(edge.Parent)
+                    var child = this.nodes.get(edge.Child)
+                    if (parent && child) {
+                        this.addLink(linkID, parent, child, Array<string>("overlay-flow"), edge.Metadata)
+                        this.highlightedLinks.push(linkID)
+                        if (this.highlightedNodes.slice(-1).pop() != parent) {
+                            this.highlightedNodes.push(parent)
+                        }
+                        this.highlightedNodes.push(child)
+                        parent.priority = child.priority = edges.length - index
+                    }
+                })
+                this.highlightedNodes.forEach(node => {
+                    this.showNode(node)
+                })
+                this.linkTagStates.set("overlay-flow", LinkTagState.Visible)
+                return true
+            })
+            .catch(err => {console.log(err); return false})
+    }
+
+    clearHighlightedPath() {
+        this.unselectAllLinks()
+        this.highlightedNodes.forEach(node => {
+            node.priority = 0
+        })
+        this.highlightedLinks.forEach(link => {
+            this.delLink(link)
+        })
+        this.highlightedNodes = []
+        this.highlightedLinks = []
+        this.root.children.forEach(node => {this.collapse(node)})
+    }
+
     addLink(id: string, node1: Node, node2: Node, tags: Array<string>, data: any) {
         this.links.set(id, new Link(id, tags, node1, node2, data, { selected: false }))
 
@@ -703,14 +772,24 @@ export class Topology extends React.Component<Props, {}> {
             var wrapper = groups.get(gid)
             var groupSize = this.props.groupSize || defaultGroupSize
             if (wrapper && wrapper.wrapped.children.length > groupSize) {
+                wrapper.children.sort((a, b) => {
+                    return this.props.sortNodesFnc(a.wrapped, b.wrapped)
+                })
                 children.push(wrapper)
                 if (wrapper.wrapped.state.expanded) {
                     if (wrapper.wrapped.state.groupFullSize) {
                         children = children.concat(wrapper.children)
                     } else {
-                        children = children.concat(
-                            wrapper.children.splice(wrapper.wrapped.state.groupOffset, groupSize)
-                        )
+                        var prioritized = wrapper.children.filter(nw => nw.wrapped.priority > 0).length
+                        if (prioritized > 0) {
+                            children = children.concat(
+                                wrapper.children.splice(0, prioritized)
+                            )
+                        } else {
+                            children = children.concat(
+                                wrapper.children.splice(wrapper.wrapped.state.groupOffset, this.props.groupSize || defaultGroupSize)
+                            )
+                        }
                     }
                 }
                 wrapper.wrapped.children.forEach(child => {
@@ -891,7 +970,7 @@ export class Topology extends React.Component<Props, {}> {
 
         var links = new Array<Link>()
 
-        var findVisible = (node: Node | null) => {
+        var findVisible = (node: Node | undefined) => {
             while (node) {
                 if (this.d3nodes.get(node.id)) {
                     return node
@@ -1390,7 +1469,7 @@ export class Topology extends React.Component<Props, {}> {
     private showNode(node: Node) {
         // find next node to expand, can be either a parent of a group
         const nextId = () => {
-            var id = "", gid = "", parent: Node | null = node
+            var id = "", gid = "", parent: Node | undefined = node
             while (parent) {
                 var group = this.nodeGroup.get(parent.id)
                 if (group && !group.wrapped.state.expanded) {
@@ -1956,8 +2035,8 @@ export class Topology extends React.Component<Props, {}> {
             .data(root.descendants(), (d: D3Node) => d.data.id)
 
         const nodeClass = (d: D3Node) => new Array<string>().concat("node",
-            this.props.nodeAttrs(d.data.wrapped).classes,
-            d.data.wrapped.state.selected ? "node-selected" : "").join(" ")
+                this.props.nodeAttrs(d.data.wrapped).classes,
+                d.data.wrapped.state.selected ? "node-selected" : "").join(" ")
 
         var nodeEnter = node.enter()
             .filter((d: D3Node) => d.data.type !== WrapperType.Hidden && d.data.wrapped !== this.root)
@@ -1987,39 +2066,39 @@ export class Topology extends React.Component<Props, {}> {
             .duration(animDuration)
             .style("opacity", 1)
 
-        const hexSize = 30
+            const hexSize = 30
 
-        nodeEnter.append("circle")
-            .attr("id", (d: D3Node) => "node-overlay-" + d.data.id)
-            .attr("class", "node-overlay")
-            .attr("r", hexSize + 16)
-            .style("opacity", 0)
-            .attr("pointer-events", "none")
-
-        var highlight = nodeEnter.append("g")
-            .attr("id", (d: D3Node) => "node-pinned-" + d.data.id)
-            .attr("class", "node-pinned")
-            .style("opacity", 0)
-            .attr("pointer-events", "none")
-        highlight.append("circle")
-            .attr("r", hexSize + 16)
-        highlight.append("text")
-            .text("\uf3c5")
-            .attr("dy", -60)
-
-        nodeEnter.append("circle")
-            .attr("class", "node-circle")
-            .attr("r", hexSize + 16)
-
-        nodeEnter.append("circle")
-            .attr("class", "node-disc")
-            .attr("r", hexSize + 8)
-            .attr("pointer-events", "none")
-
-        nodeEnter.append("path")
-            .attr("class", "node-hexagon")
-            .attr("d", (d: D3Node) => this.liner(this.hexagon(d, hexSize)))
-            .attr("pointer-events", "none")
+            nodeEnter.append("circle")
+                .attr("id", (d: D3Node) => "node-overlay-" + d.data.id)
+                .attr("class", "node-overlay")
+                .attr("r", hexSize + 16)
+                .style("opacity", 0)
+                .attr("pointer-events", "none")
+    
+            var highlight = nodeEnter.append("g")
+                .attr("id", (d: D3Node) => "node-pinned-" + d.data.id)
+                .attr("class", "node-pinned")
+                .style("opacity", 0)
+                .attr("pointer-events", "none")
+            highlight.append("circle")
+                .attr("r", hexSize + 16)
+            highlight.append("text")
+                .text("\uf3c5")
+                .attr("dy", -60)
+    
+            nodeEnter.append("circle")
+                .attr("class", "node-circle")
+                .attr("r", hexSize + 16)
+    
+            nodeEnter.append("circle")
+                .attr("class", "node-disc")
+                .attr("r", hexSize + 8)
+                .attr("pointer-events", "none")
+    
+            nodeEnter.append("path")
+                .attr("class", "node-hexagon")
+                .attr("d", (d: D3Node) => this.liner(this.hexagon(d, hexSize)))
+                .attr("pointer-events", "none")
 
         const isImgIcon = (d: D3Node): boolean => {
             if (this.props.nodeAttrs(d.data.wrapped).href) {
@@ -2031,7 +2110,7 @@ export class Topology extends React.Component<Props, {}> {
         nodeEnter.each(function (d: D3Node) {
             var el = select(this)
             var attrs = self.props.nodeAttrs(d.data.wrapped)
-
+            
             if (isImgIcon(d)) {
                 el.append("image")
                     .attr("class", (d: D3Node) => "node-icon " + attrs.iconClass)
@@ -2159,7 +2238,10 @@ export class Topology extends React.Component<Props, {}> {
             var n = 0
             if (node.type == WrapperType.Group && node.wrapped.state.expanded) {
                 if (!node.wrapped.state.groupFullSize) {
-                    var size = this.props.groupSize || defaultGroupSize
+                    var size = node.wrapped.children.filter(node => node.priority > 0).length
+                    if (size == 0) {
+                        size = this.props.groupSize || defaultGroupSize
+                    }
                     n = node.wrapped.children.length - size
                 }
             } else {
