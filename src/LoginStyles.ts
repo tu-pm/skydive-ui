@@ -20,22 +20,21 @@ import { minWidth, borderRadius } from "@material-ui/system";
 import { createStyles, Theme } from '@material-ui/core';
 
 export const styles = (theme: Theme) => createStyles({
-  '@global': {
-    body: {
-      backgroundColor: theme.palette.common.black
-    }
+  pageHeader: {
+    minHeight: "100vh",
+    height: "auto",
+    display: "inherit",
+    position: "relative" as const,
+    margin: "0",
+    padding: "0",
+    border: "0",
+    justifyContent: "center"
+  },
+  container: {
+    minHeight: "100vh"
   },
   paper: {
-    padding: theme.spacing(4),
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    backgroundColor: theme.palette.common.white,
-    borderRadius: 5
-  },
-  form: {
-    width: '100%',
-    marginTop: theme.spacing(1)
+    padding: theme.spacing(2)
   },
   submit: {
     margin: theme.spacing(3, 0, 2)
@@ -47,20 +46,15 @@ export const styles = (theme: Theme) => createStyles({
     color: '#bb2c2c',
     fontSize: 18
   },
-  logo: {
-    marginTop: theme.spacing(12),
-    marginBottom: theme.spacing(2),
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
   logoImg: {
     width: '40%',
-    height: 'auto'
+    height: 'auto',
+    display: 'block',
+    marginLeft: 'auto',
+    marginRight: 'auto',
   },
   logoTitle: {
-    color: theme.palette.common.white,
-    fontStyle: 'italic',
-    fontWeight: 400
+    color: theme.palette.grey[800],
+    paddingBottom: theme.spacing(2)
   }
 })
