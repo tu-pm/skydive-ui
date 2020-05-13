@@ -146,9 +146,8 @@ class Login extends React.Component<Props, State> {
                     backgroundPosition: "top center"
                 }}
             >
-                <div className={classes.container}>
-                    <Grid container justify="center">
-                        <Grid item xs={10} sm={8} md={4}>
+                    <Grid container alignItems="center" justify="center" className={classes.container}>
+                        <Grid item xs={8} sm={6} md={4} lg={3}>
                             <Paper className={classes.paper}>
                                 <img src={Logo} alt="logo" className={classes.logoImg} />
                                 <Typography className={classes.logoTitle} variant="h4" align="center">
@@ -210,7 +209,6 @@ class Login extends React.Component<Props, State> {
                             </Paper>
                         </Grid>
                     </Grid>
-                </div>
             </div >
         )
     }
