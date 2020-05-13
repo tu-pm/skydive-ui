@@ -55,6 +55,18 @@ module.exports = {
 
     devServer: {
         historyApiFallback: true,
+        proxy: [
+            {
+                context: ['/proxy'],
+                target: 'http://10.60.17.243:8304',
+                pathRewrite: {"^/proxy": ""}
+            },
+            {
+                context: ['/ws'],
+                target: 'http://10.60.17.243:8304',
+                ws: true
+            }
+        ]
     },
 
     devtool: "source-map",

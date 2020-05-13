@@ -36,6 +36,7 @@ import { Grid, Paper } from "@material-ui/core"
 import { stringify } from "query-string"
 
 import Logo from '../assets/Logo-large.png'
+import { fetchProxy } from "./Tools"
 
 interface Props {
     classes: any
@@ -99,7 +100,7 @@ class Login extends React.Component<Props, State> {
             username: this.state.username,
             password: this.state.password
         })
-        fetch(`/login?${qs}`, {
+        fetchProxy(`/login?${qs}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',

@@ -26,6 +26,7 @@ import ResizeObserver from 'react-resize-observer'
 import './Topology.css'
 import { v4 as uuid } from "uuid"
 import { stringify } from "query-string"
+import { fetchProxy } from "./Tools"
 
 const animDuration = 500
 const defaultGroupSize = 4
@@ -600,8 +601,7 @@ export class Topology extends React.Component<Props, {}> {
             destIP: destAddr
         })
         var url = `/api/tungstenfabric?${qs}`
-        console.log(url)
-        return fetch(`/api/tungstenfabric?${qs}`, {
+        return fetchProxy(`/api/tungstenfabric?${qs}`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',

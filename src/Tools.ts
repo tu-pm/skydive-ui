@@ -44,3 +44,10 @@ export default class Tools {
         return b.toLocaleString() + " bit/s"
     }
 }
+
+export function fetchProxy(path: string, init?: RequestInit): Promise<Response> {
+    return Promise.race([
+        fetch("/proxy" + path, init),
+        new Promise<Response>((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
+    ]);
+}
