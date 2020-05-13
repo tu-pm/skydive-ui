@@ -67,6 +67,7 @@ import Logo from '../assets/Logo.png'
 import DefaultConfig from './Config'
 
 import IpPathTracing from './IpPathTracing'
+import { fetchProxy } from './Tools'
 
 const queryString = require('query-string')
 
@@ -570,7 +571,7 @@ class App extends React.Component<Props, State> {
   }
 
   async checkAuth(): Promise<void> {
-    return fetch(`/api/status`)
+    return fetchProxy(`/api/status`)
       .then(response => {
         if (response.status !== 200) {
           this.logout()
@@ -703,7 +704,7 @@ class App extends React.Component<Props, State> {
   }
 
   logout() {
-    fetch("/logout", {method: "POST"}).then(() => {
+    fetchProxy("/logout", {method: "POST"}).then(() => {
       this.props.closeSession()
       this.props.history.push("/login")
     })
