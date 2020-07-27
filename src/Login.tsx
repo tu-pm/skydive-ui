@@ -109,25 +109,27 @@ class Login extends React.Component<Props, State> {
         .then(response => {
             if (response.status >= 200 && response.status < 300) {
                 this.setState({ failure: false })
-
-                // Open a new session
-                this.props.openSession(
-                    this.props.session.endpoint,
-                    this.state.username,
-                    "",
-                    "",
-                    this.state.persistent
-                )
-
-                // Redirect to previous route
-                var from = "/"
-                if (this.props.location.state && this.props.location.state.from !== "/login") {
-                    from = this.props.location.state.from
-                }
-                this.props.history.push(from)
+                return response.json()
             } else {
                 throw new Error(response.statusText)
             }
+        })
+        .then(data => {
+            // Open a new session
+            this.props.openSession(
+                this.props.session.endpoint,
+                this.state.username,
+                data.Token,
+                data.Permissions,
+                this.state.persistent
+            )
+
+            // Redirect to previous route
+            var from = "/"
+            if (this.props.location.state && this.props.location.state.from !== "/login") {
+                from = this.props.location.state.from
+            }
+            this.props.history.push(from)
         })
         .catch(err => {
             console.log(err)

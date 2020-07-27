@@ -49,7 +49,7 @@ export const mapDispatchToProps = ({
 
 const PrivateRoute = connect(mapStateToProps, mapDispatchToProps)(({ component, session, ...props }: any) => {
   const routeComponent = (props: any) => (
-    document.cookie.includes("authtok")
+    document.cookie.includes("authtoken")
       ? React.createElement(component, props)
       : <Redirect to={{ pathname: '/login' }} />
   )
